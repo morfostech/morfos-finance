@@ -2,7 +2,9 @@
 
 Sistema interno de controle financeiro da Morfos Tech. Backend em Go (Chi + PostgreSQL), frontend em React + TypeScript, identidade visual alinhada ao site da Morfos.
 
-> Em construção por módulos: **auth ✅ → projetos → transações → recorrência → anexos → dashboards → tema/UI**.
+> Em construção por módulos: **auth ✅ → projetos ✅ → transações → recorrência → anexos → dashboards → tema/UI**.
+
+> **Valores monetários** trafegam na API em **centavos** (inteiro), nunca float. Ex.: `500000` = R$ 5.000,00.
 
 ## Stack
 
@@ -65,6 +67,25 @@ gating de permissões por cargo (admin/sócio/colaborador).
 **Papéis:** `admin` (vê/edita tudo, gerencia usuários), `socio` (visão financeira
 completa, somente leitura), `colaborador` (apenas a própria área). Usuários novos
 nascem com `must_change_password = true`.
+
+## API — módulo Projetos
+
+| Método | Rota                                          | Auth        | Descrição                                                    |
+|--------|-----------------------------------------------|-------------|-------------------------------------------------------------|
+| GET    | `/api/projects`                               | Autenticado | Lista projetos (colaborador vê só os alocados)              |
+| GET    | `/api/projects/{id}`                          | Autenticado | Projeto + parcelas + membros (colaborador só se alocado)   |
+| POST   | `/api/projects`                               | Admin       | Cria projeto; gera parcelas 50/50 se houver implementação   |
+| PUT    | `/api/projects/{id}`                          | Admin       | Atualiza campos; reconcilia parcelas de implementação       |
+| PUT    | `/api/projects/{id}/members`                  | Admin       | Define a lista de colaboradores alocados                    |
+| PATCH  | `/api/projects/{id}/installments/{iid}`       | Admin       | Marca parcela paga (`pago_em`) ou pendente (`null`)         |
+
+**Fontes de receita:** um projeto tem `valor_implementacao` e/ou `valor_mensal`
+(ao menos um). A implementação vira **duas parcelas** — `entrada` (50%, arredondada
+para baixo) e `finalizacao` (o restante) — que sempre somam o valor total.
+
+**Regra de reconciliação de parcelas** (no `PUT`): alterar/remover o valor de
+implementação **com uma parcela já paga** retorna `409`; sem parcela paga, as
+parcelas são regeradas. Mensalidade sozinha não gera parcelas.
 
 ## Estrutura
 

@@ -12,4 +12,8 @@ var (
 	ErrValidation         = errors.New("dados inválidos")
 	ErrForbidden          = errors.New("acesso negado")
 	ErrWrongPassword      = errors.New("senha atual incorreta")
+
+	// ErrPaidInstallment guards against mutating the implementation value once a
+	// parcela has been paid.
+	ErrPaidInstallment = errors.New("parcela já paga não pode ser alterada")
 )

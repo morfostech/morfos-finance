@@ -51,11 +51,14 @@ func run() error {
 
 	// Wiring: repositories -> services -> handlers.
 	userRepo := repository.NewUserRepository(pool)
+	projectRepo := repository.NewProjectRepository(pool)
 	tokens := auth.NewTokenManager(cfg.JWTSecret, cfg.JWTTTL)
 	authSvc := service.NewAuthService(userRepo, tokens)
+	projectSvc := service.NewProjectService(projectRepo)
 
 	router := &apphttp.Router{
 		Auth:        handlers.NewAuthHandler(authSvc),
+		Projects:    handlers.NewProjectHandler(projectSvc),
 		Authn:       middleware.NewAuthenticator(tokens),
 		CORSOrigins: cfg.CORSOrigins,
 	}
