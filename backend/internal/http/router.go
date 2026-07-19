@@ -22,8 +22,12 @@ type Router struct {
 	Transactions *handlers.TransactionHandler
 	Categories   *handlers.CategoryHandler
 	Recurrence   *handlers.RecurrenceHandler
+	Attachments  *handlers.AttachmentHandler
 	Authn        *middleware.Authenticator
 	CORSOrigins  []string
+
+	// LocalUploadDir, when set (disk storage mode), is served at /uploads.
+	LocalUploadDir string
 }
 
 func (rt *Router) Build() http.Handler {
@@ -46,6 +50,12 @@ func (rt *Router) Build() http.Handler {
 		respond.JSON(w, http.StatusOK, map[string]string{"status": "ok"})
 	})
 
+	// Serve locally-stored uploads (disk mode only).
+	if rt.LocalUploadDir != "" {
+		fs := http.StripPrefix("/uploads/", http.FileServer(http.Dir(rt.LocalUploadDir)))
+		r.Handle("/uploads/*", fs)
+	}
+
 	r.Route("/api", func(r chi.Router) {
 		r.Post("/auth/login", rt.Auth.Login)
 
@@ -65,6 +75,10 @@ func (rt *Router) Build() http.Handler {
 
 			// Categories: readable by any authenticated user.
 			r.Get("/categories", rt.Categories.List)
+
+			// Attachments & proposals: reads for authenticated users.
+			r.Get("/transactions/{id}/attachments", rt.Attachments.ListTransactionAttachments)
+			r.Get("/projects/{id}/proposals", rt.Attachments.ListProposals)
 
 			// Company financial views: admin and sócio only.
 			r.Group(func(r chi.Router) {
@@ -87,6 +101,13 @@ func (rt *Router) Build() http.Handler {
 
 				r.Post("/categories", rt.Categories.Create)
 				r.Delete("/categories/{id}", rt.Categories.Delete)
+
+				// Uploads: comprovantes and proposals.
+				r.Post("/transactions/{id}/attachments", rt.Attachments.AttachToTransaction)
+				r.Post("/projects/{id}/installments/{iid}/attachments", rt.Attachments.AttachToInstallment)
+				r.Post("/projects/{id}/proposals", rt.Attachments.AttachProposal)
+				r.Delete("/attachments/{id}", rt.Attachments.DeleteAttachment)
+				r.Delete("/proposals/{id}", rt.Attachments.DeleteProposal)
 
 				// User management.
 				r.Get("/users", rt.Auth.ListUsers)

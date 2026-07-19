@@ -2,7 +2,7 @@
 
 Sistema interno de controle financeiro da Morfos Tech. Backend em Go (Chi + PostgreSQL), frontend em React + TypeScript, identidade visual alinhada ao site da Morfos.
 
-> Em construção por módulos: **auth ✅ → projetos ✅ → transações ✅ → recorrência ✅ → anexos → dashboards → tema/UI**.
+> Em construção por módulos: **auth ✅ → projetos ✅ → transações ✅ → recorrência ✅ → anexos ✅ → dashboards → tema/UI**.
 
 > **Valores monetários** trafegam na API em **centavos** (inteiro), nunca float. Ex.: `500000` = R$ 5.000,00.
 
@@ -126,6 +126,29 @@ as transações `ganho` de `origem=recorrencia` no mês:
 Um projeto entra no resultado do mês se estiver **ativo** naquele mês **ou** se
 tiver recebido recorrência nele. Parâmetros: `ano`, `mes` (default = mês atual),
 `project_id` (opcional). `timeline` aceita `ano` e `project_id`.
+
+## API — módulo Anexos
+
+Uploads são `multipart/form-data` com o campo **`file`** e `descricao` opcional.
+
+| Método | Rota                                                    | Auth        | Descrição                                  |
+|--------|---------------------------------------------------------|-------------|--------------------------------------------|
+| POST   | `/api/transactions/{id}/attachments`                    | Admin       | Comprovante de transação (PDF/PNG/JPG/JPEG)|
+| GET    | `/api/transactions/{id}/attachments`                    | Autenticado | Lista comprovantes da transação            |
+| POST   | `/api/projects/{id}/installments/{iid}/attachments`     | Admin       | Comprovante de parcela                      |
+| DELETE | `/api/attachments/{id}`                                 | Admin       | Remove comprovante (DB + objeto)           |
+| POST   | `/api/projects/{id}/proposals`                          | Admin       | Proposta comercial (PDF/DOCX)              |
+| GET    | `/api/projects/{id}/proposals`                          | Autenticado | Lista propostas do projeto                 |
+| DELETE | `/api/proposals/{id}`                                   | Admin       | Remove proposta                             |
+
+**Storage** atrás de uma interface (`internal/storage`): sem variáveis `S3_*`, os
+arquivos vão para **disco local** (`UPLOAD_DIR`, servidos em `/uploads`); com
+`S3_ENDPOINT` + `S3_BUCKET`, usa **S3-compatible** (Cloudflare R2 por padrão, via
+`minio-go`) — a mesma lógica troca de backend só pelo `.env`.
+
+**Validação:** comprovantes aceitam PDF/PNG/JPG/JPEG; propostas PDF/DOCX; tamanho
+máximo `MAX_UPLOAD_MB` (default 10). O dono (transação/parcela/projeto) precisa
+existir, senão `404`.
 
 ## Estrutura
 

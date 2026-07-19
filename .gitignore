@@ -8,6 +8,10 @@ backend/bin/
 *.test
 *.out
 
+# local uploads (disk storage mode)
+backend/uploads/
+uploads/
+
 # Node / frontend
 node_modules/
 frontend/dist/

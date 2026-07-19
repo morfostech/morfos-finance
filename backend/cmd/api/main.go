@@ -20,6 +20,7 @@ import (
 	"github.com/morfostech/morfos-finance/internal/migrate"
 	"github.com/morfostech/morfos-finance/internal/repository"
 	"github.com/morfostech/morfos-finance/internal/service"
+	"github.com/morfostech/morfos-finance/internal/storage"
 )
 
 func main() {
@@ -55,21 +56,36 @@ func run() error {
 	txRepo := repository.NewTransactionRepository(pool)
 	catRepo := repository.NewCategoryRepository(pool)
 	recurrenceRepo := repository.NewRecurrenceRepository(pool)
+	attachmentRepo := repository.NewAttachmentRepository(pool)
+
+	store, _, err := storage.New(cfg.Storage)
+	if err != nil {
+		return err
+	}
+
 	tokens := auth.NewTokenManager(cfg.JWTSecret, cfg.JWTTTL)
 	authSvc := service.NewAuthService(userRepo, tokens)
 	projectSvc := service.NewProjectService(projectRepo)
 	txSvc := service.NewTransactionService(txRepo)
 	catSvc := service.NewCategoryService(catRepo)
 	recurrenceSvc := service.NewRecurrenceService(recurrenceRepo)
+	attachmentSvc := service.NewAttachmentService(attachmentRepo, store, txRepo, projectRepo, projectRepo, cfg.Storage.MaxUploadBytes)
+
+	localUploadDir := ""
+	if !cfg.Storage.UseS3() {
+		localUploadDir = cfg.Storage.Dir
+	}
 
 	router := &apphttp.Router{
-		Auth:         handlers.NewAuthHandler(authSvc),
-		Projects:     handlers.NewProjectHandler(projectSvc),
-		Transactions: handlers.NewTransactionHandler(txSvc),
-		Categories:   handlers.NewCategoryHandler(catSvc),
-		Recurrence:   handlers.NewRecurrenceHandler(recurrenceSvc),
-		Authn:        middleware.NewAuthenticator(tokens),
-		CORSOrigins:  cfg.CORSOrigins,
+		Auth:           handlers.NewAuthHandler(authSvc),
+		Projects:       handlers.NewProjectHandler(projectSvc),
+		Transactions:   handlers.NewTransactionHandler(txSvc),
+		Categories:     handlers.NewCategoryHandler(catSvc),
+		Recurrence:     handlers.NewRecurrenceHandler(recurrenceSvc),
+		Attachments:    handlers.NewAttachmentHandler(attachmentSvc, cfg.Storage.MaxUploadBytes),
+		Authn:          middleware.NewAuthenticator(tokens),
+		CORSOrigins:    cfg.CORSOrigins,
+		LocalUploadDir: localUploadDir,
 	}
 
 	srv := &http.Server{
