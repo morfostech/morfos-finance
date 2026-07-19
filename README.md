@@ -1,1 +1,87 @@
-# morfos-finance
+# Morfos Finance
+
+Sistema interno de controle financeiro da Morfos Tech. Backend em Go (Chi + PostgreSQL), frontend em React + TypeScript, identidade visual alinhada ao site da Morfos.
+
+> Em construção por módulos: **auth ✅ → projetos → transações → recorrência → anexos → dashboards → tema/UI**.
+
+## Stack
+
+- **Backend:** Go 1.25, Chi router, PostgreSQL (pgx), JWT (HS256), senhas com argon2id.
+- **Frontend:** React 18 + TypeScript + Vite, CSS Modules com os tokens da Morfos _(próximos módulos)_.
+- **Storage de anexos:** S3-compatible via `.env` (padrão Cloudflare R2) _(módulo de anexos)_.
+- **Arquitetura:** camadas `handlers → services → repositories`, migrations versionadas embutidas no binário, segredos via `.env`.
+
+## Rodar localmente
+
+Pré-requisitos: Go 1.25+ e Docker.
+
+```bash
+# 1. Subir o Postgres
+docker compose up -d
+
+# 2. Configurar o backend
+cd backend
+cp .env.example .env          # ajuste JWT_SECRET e as credenciais do admin
+
+# 3. Criar o admin inicial (roda as migrations + seed de categorias antes)
+go run ./cmd/seed
+
+# 4. Subir a API
+go run ./cmd/api              # http://localhost:8080
+```
+
+A API aplica as migrations pendentes automaticamente ao subir. `go run ./cmd/seed` é
+idempotente — se o admin já existe, não faz nada.
+
+### Variáveis de ambiente
+
+Ver [`backend/.env.example`](backend/.env.example). Essenciais: `DATABASE_URL`, `JWT_SECRET`.
+Para produção, troque `JWT_SECRET` por um valor longo e aleatório e defina
+`SEED_ADMIN_EMAIL` / `SEED_ADMIN_SENHA` antes de rodar o seed.
+
+## Testes
+
+```bash
+cd backend
+go test ./...
+```
+
+Cobrem hashing/verificação de senha, emissão/parse de JWT, regras de login
+(senha errada, usuário inativo, e-mail case-insensitive), troca de senha e o
+gating de permissões por cargo (admin/sócio/colaborador).
+
+## API — módulo Auth
+
+| Método | Rota                              | Auth        | Descrição                                   |
+|--------|-----------------------------------|-------------|---------------------------------------------|
+| GET    | `/health`                         | —           | Healthcheck                                 |
+| POST   | `/api/auth/login`                 | —           | Login por e-mail/senha, retorna JWT         |
+| GET    | `/api/auth/me`                    | Autenticado | Dados do usuário atual                      |
+| POST   | `/api/auth/change-password`       | Autenticado | Troca a própria senha (cobre 1º login)      |
+| GET    | `/api/users`                      | Admin       | Lista usuários                              |
+| POST   | `/api/users`                      | Admin       | Cria usuário com senha inicial              |
+| POST   | `/api/users/{id}/reset-password`  | Admin       | Reseta senha (força troca no próximo login) |
+
+**Papéis:** `admin` (vê/edita tudo, gerencia usuários), `socio` (visão financeira
+completa, somente leitura), `colaborador` (apenas a própria área). Usuários novos
+nascem com `must_change_password = true`.
+
+## Estrutura
+
+```
+morfos-finance/
+├── docker-compose.yml            # Postgres local
+├── assets/branding/              # logo e material de identidade da Morfos
+├── backend/
+│   ├── cmd/api/                  # servidor HTTP
+│   ├── cmd/seed/                 # provisiona o admin inicial
+│   ├── internal/
+│   │   ├── config/ database/ migrate/
+│   │   ├── domain/               # entidades + erros de domínio
+│   │   ├── auth/                 # argon2id + JWT
+│   │   ├── repository/           # acesso a Postgres (pgx)
+│   │   ├── service/              # regras de negócio
+│   │   └── http/                 # router, middlewares, handlers, respostas
+│   └── migrations/               # *.up.sql / *.down.sql (embutidas no binário)
+└── frontend/                     # (próximos módulos)
+```
