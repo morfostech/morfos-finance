@@ -52,15 +52,21 @@ func run() error {
 	// Wiring: repositories -> services -> handlers.
 	userRepo := repository.NewUserRepository(pool)
 	projectRepo := repository.NewProjectRepository(pool)
+	txRepo := repository.NewTransactionRepository(pool)
+	catRepo := repository.NewCategoryRepository(pool)
 	tokens := auth.NewTokenManager(cfg.JWTSecret, cfg.JWTTTL)
 	authSvc := service.NewAuthService(userRepo, tokens)
 	projectSvc := service.NewProjectService(projectRepo)
+	txSvc := service.NewTransactionService(txRepo)
+	catSvc := service.NewCategoryService(catRepo)
 
 	router := &apphttp.Router{
-		Auth:        handlers.NewAuthHandler(authSvc),
-		Projects:    handlers.NewProjectHandler(projectSvc),
-		Authn:       middleware.NewAuthenticator(tokens),
-		CORSOrigins: cfg.CORSOrigins,
+		Auth:         handlers.NewAuthHandler(authSvc),
+		Projects:     handlers.NewProjectHandler(projectSvc),
+		Transactions: handlers.NewTransactionHandler(txSvc),
+		Categories:   handlers.NewCategoryHandler(catSvc),
+		Authn:        middleware.NewAuthenticator(tokens),
+		CORSOrigins:  cfg.CORSOrigins,
 	}
 
 	srv := &http.Server{

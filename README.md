@@ -2,7 +2,7 @@
 
 Sistema interno de controle financeiro da Morfos Tech. Backend em Go (Chi + PostgreSQL), frontend em React + TypeScript, identidade visual alinhada ao site da Morfos.
 
-> Em construção por módulos: **auth ✅ → projetos ✅ → transações → recorrência → anexos → dashboards → tema/UI**.
+> Em construção por módulos: **auth ✅ → projetos ✅ → transações ✅ → recorrência → anexos → dashboards → tema/UI**.
 
 > **Valores monetários** trafegam na API em **centavos** (inteiro), nunca float. Ex.: `500000` = R$ 5.000,00.
 
@@ -86,6 +86,27 @@ para baixo) e `finalizacao` (o restante) — que sempre somam o valor total.
 **Regra de reconciliação de parcelas** (no `PUT`): alterar/remover o valor de
 implementação **com uma parcela já paga** retorna `409`; sem parcela paga, as
 parcelas são regeradas. Mensalidade sozinha não gera parcelas.
+
+## API — módulo Transações & Categorias
+
+| Método | Rota                        | Auth        | Descrição                                              |
+|--------|-----------------------------|-------------|--------------------------------------------------------|
+| GET    | `/api/transactions`         | Autenticado | Lista com filtros (colaborador vê só as próprias)      |
+| GET    | `/api/transactions/{id}`    | Autenticado | Uma transação (colaborador só as próprias)             |
+| POST   | `/api/transactions`         | Admin       | Cria ganho/despesa (carimba `created_by`)              |
+| PUT    | `/api/transactions/{id}`    | Admin       | Edita transação                                        |
+| DELETE | `/api/transactions/{id}`    | Admin       | Soft delete (`deleted_at`; a linha permanece)          |
+| GET    | `/api/categories`           | Autenticado | Lista categorias de despesa                            |
+| POST   | `/api/categories`           | Admin       | Cria categoria                                         |
+| DELETE | `/api/categories/{id}`      | Admin       | Remove categoria (`409` se em uso por transações)      |
+
+**Regras de transação:** `valor` positivo (centavos) e `data` obrigatórios.
+`ganho` aceita `origem` (`implementacao`/`recorrencia`/`avulso`) e nunca categoria;
+`despesa` aceita `category_id` e nunca origem. `project_id`/`user_id` opcionais.
+
+**Filtros do `GET /api/transactions`** (query string): `from`, `to` (`YYYY-MM-DD`),
+`tipo`, `origem`, `project_id`, `user_id`, `category_id`. Para colaborador, o
+`user_id` é sempre forçado ao próprio, ignorando o parâmetro.
 
 ## Estrutura
 

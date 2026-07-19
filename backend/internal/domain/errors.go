@@ -16,4 +16,8 @@ var (
 	// ErrPaidInstallment guards against mutating the implementation value once a
 	// parcela has been paid.
 	ErrPaidInstallment = errors.New("parcela já paga não pode ser alterada")
+
+	// ErrConflict is a generic state conflict (e.g. deleting a resource still
+	// referenced elsewhere).
+	ErrConflict = errors.New("conflito de estado")
 )

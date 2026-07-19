@@ -17,10 +17,12 @@ import (
 // Router wires middleware and routes. New feature modules register their routes
 // here as they land.
 type Router struct {
-	Auth        *handlers.AuthHandler
-	Projects    *handlers.ProjectHandler
-	Authn       *middleware.Authenticator
-	CORSOrigins []string
+	Auth         *handlers.AuthHandler
+	Projects     *handlers.ProjectHandler
+	Transactions *handlers.TransactionHandler
+	Categories   *handlers.CategoryHandler
+	Authn        *middleware.Authenticator
+	CORSOrigins  []string
 }
 
 func (rt *Router) Build() http.Handler {
@@ -56,6 +58,13 @@ func (rt *Router) Build() http.Handler {
 			r.Get("/projects", rt.Projects.List)
 			r.Get("/projects/{id}", rt.Projects.Get)
 
+			// Transactions: reads scoped by role (colaborador -> own rows).
+			r.Get("/transactions", rt.Transactions.List)
+			r.Get("/transactions/{id}", rt.Transactions.Get)
+
+			// Categories: readable by any authenticated user.
+			r.Get("/categories", rt.Categories.List)
+
 			r.Group(func(r chi.Router) {
 				r.Use(middleware.RequireRole(domain.RoleAdmin))
 
@@ -63,6 +72,13 @@ func (rt *Router) Build() http.Handler {
 				r.Put("/projects/{id}", rt.Projects.Update)
 				r.Put("/projects/{id}/members", rt.Projects.SetMembers)
 				r.Patch("/projects/{id}/installments/{iid}", rt.Projects.MarkInstallment)
+
+				r.Post("/transactions", rt.Transactions.Create)
+				r.Put("/transactions/{id}", rt.Transactions.Update)
+				r.Delete("/transactions/{id}", rt.Transactions.Delete)
+
+				r.Post("/categories", rt.Categories.Create)
+				r.Delete("/categories/{id}", rt.Categories.Delete)
 
 				// User management.
 				r.Get("/users", rt.Auth.ListUsers)
