@@ -2,7 +2,7 @@
 
 Sistema interno de controle financeiro da Morfos Tech. Backend em Go (Chi + PostgreSQL), frontend em React + TypeScript, identidade visual alinhada ao site da Morfos.
 
-> Em construção por módulos: **auth ✅ → projetos ✅ → transações ✅ → recorrência ✅ → anexos ✅ → dashboards → tema/UI**.
+> Em construção por módulos: **auth ✅ → projetos ✅ → transações ✅ → recorrência ✅ → anexos ✅ → dashboards ✅ → tema/UI**.
 
 > **Valores monetários** trafegam na API em **centavos** (inteiro), nunca float. Ex.: `500000` = R$ 5.000,00.
 
@@ -149,6 +149,26 @@ arquivos vão para **disco local** (`UPLOAD_DIR`, servidos em `/uploads`); com
 **Validação:** comprovantes aceitam PDF/PNG/JPG/JPEG; propostas PDF/DOCX; tamanho
 máximo `MAX_UPLOAD_MB` (default 10). O dono (transação/parcela/projeto) precisa
 existir, senão `404`.
+
+## API — módulo Dashboards
+
+| Método | Rota                         | Auth          | Descrição                                        |
+|--------|------------------------------|---------------|--------------------------------------------------|
+| GET    | `/api/dashboard/company`     | Admin / Sócio | Visão financeira completa da empresa             |
+| GET    | `/api/dashboard/me`          | Autenticado   | Visão pessoal (colaborador: próprios números)    |
+
+**Período** via `from`/`to` (`YYYY-MM-DD`); sem parâmetros usa o **mês atual**.
+Isso cobre os filtros diário/semanal/mensal/anual/personalizado — o cliente
+escolhe o intervalo.
+
+**`company`** traz: `saldo_em_caixa` (acumulado de todos os tempos, entrou −
+saiu), `ganhos`/`despesas`/`resultado` do período, `ganhos_por_origem`,
+`despesas_por_categoria`, `implementacao` (total × recebido × a_receber das
+parcelas), `parcelas_pendentes`, `recorrencia_mes` (resumo do mês de `to`), e os
+recortes `por_projeto` e `por_colaborador`.
+
+**`me`** traz `ganhos`/`despesas`/`saldo` do colaborador no período e seus
+`projetos` alocados.
 
 ## Estrutura
 

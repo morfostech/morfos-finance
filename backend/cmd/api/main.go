@@ -70,6 +70,7 @@ func run() error {
 	catSvc := service.NewCategoryService(catRepo)
 	recurrenceSvc := service.NewRecurrenceService(recurrenceRepo)
 	attachmentSvc := service.NewAttachmentService(attachmentRepo, store, txRepo, projectRepo, projectRepo, cfg.Storage.MaxUploadBytes)
+	dashboardSvc := service.NewDashboardService(repository.NewDashboardRepository(pool), recurrenceSvc, projectSvc)
 
 	localUploadDir := ""
 	if !cfg.Storage.UseS3() {
@@ -83,6 +84,7 @@ func run() error {
 		Categories:     handlers.NewCategoryHandler(catSvc),
 		Recurrence:     handlers.NewRecurrenceHandler(recurrenceSvc),
 		Attachments:    handlers.NewAttachmentHandler(attachmentSvc, cfg.Storage.MaxUploadBytes),
+		Dashboard:      handlers.NewDashboardHandler(dashboardSvc),
 		Authn:          middleware.NewAuthenticator(tokens),
 		CORSOrigins:    cfg.CORSOrigins,
 		LocalUploadDir: localUploadDir,

@@ -23,6 +23,7 @@ type Router struct {
 	Categories   *handlers.CategoryHandler
 	Recurrence   *handlers.RecurrenceHandler
 	Attachments  *handlers.AttachmentHandler
+	Dashboard    *handlers.DashboardHandler
 	Authn        *middleware.Authenticator
 	CORSOrigins  []string
 
@@ -80,11 +81,15 @@ func (rt *Router) Build() http.Handler {
 			r.Get("/transactions/{id}/attachments", rt.Attachments.ListTransactionAttachments)
 			r.Get("/projects/{id}/proposals", rt.Attachments.ListProposals)
 
+			// Personal dashboard: any authenticated user (scoped to self).
+			r.Get("/dashboard/me", rt.Dashboard.Me)
+
 			// Company financial views: admin and sócio only.
 			r.Group(func(r chi.Router) {
 				r.Use(middleware.RequireRole(domain.RoleAdmin, domain.RoleSocio))
 				r.Get("/recurrence", rt.Recurrence.Month)
 				r.Get("/recurrence/timeline", rt.Recurrence.Timeline)
+				r.Get("/dashboard/company", rt.Dashboard.Company)
 			})
 
 			r.Group(func(r chi.Router) {
