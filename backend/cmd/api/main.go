@@ -54,17 +54,20 @@ func run() error {
 	projectRepo := repository.NewProjectRepository(pool)
 	txRepo := repository.NewTransactionRepository(pool)
 	catRepo := repository.NewCategoryRepository(pool)
+	recurrenceRepo := repository.NewRecurrenceRepository(pool)
 	tokens := auth.NewTokenManager(cfg.JWTSecret, cfg.JWTTTL)
 	authSvc := service.NewAuthService(userRepo, tokens)
 	projectSvc := service.NewProjectService(projectRepo)
 	txSvc := service.NewTransactionService(txRepo)
 	catSvc := service.NewCategoryService(catRepo)
+	recurrenceSvc := service.NewRecurrenceService(recurrenceRepo)
 
 	router := &apphttp.Router{
 		Auth:         handlers.NewAuthHandler(authSvc),
 		Projects:     handlers.NewProjectHandler(projectSvc),
 		Transactions: handlers.NewTransactionHandler(txSvc),
 		Categories:   handlers.NewCategoryHandler(catSvc),
+		Recurrence:   handlers.NewRecurrenceHandler(recurrenceSvc),
 		Authn:        middleware.NewAuthenticator(tokens),
 		CORSOrigins:  cfg.CORSOrigins,
 	}

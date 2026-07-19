@@ -2,7 +2,7 @@
 
 Sistema interno de controle financeiro da Morfos Tech. Backend em Go (Chi + PostgreSQL), frontend em React + TypeScript, identidade visual alinhada ao site da Morfos.
 
-> Em construção por módulos: **auth ✅ → projetos ✅ → transações ✅ → recorrência → anexos → dashboards → tema/UI**.
+> Em construção por módulos: **auth ✅ → projetos ✅ → transações ✅ → recorrência ✅ → anexos → dashboards → tema/UI**.
 
 > **Valores monetários** trafegam na API em **centavos** (inteiro), nunca float. Ex.: `500000` = R$ 5.000,00.
 
@@ -107,6 +107,25 @@ parcelas são regeradas. Mensalidade sozinha não gera parcelas.
 **Filtros do `GET /api/transactions`** (query string): `from`, `to` (`YYYY-MM-DD`),
 `tipo`, `origem`, `project_id`, `user_id`, `category_id`. Para colaborador, o
 `user_id` é sempre forçado ao próprio, ignorando o parâmetro.
+
+## API — módulo Recorrência
+
+| Método | Rota                          | Auth          | Descrição                                             |
+|--------|-------------------------------|---------------|-------------------------------------------------------|
+| GET    | `/api/recurrence`             | Admin / Sócio | Resumo do mês: previsto × recebido × pendente         |
+| GET    | `/api/recurrence/timeline`    | Admin / Sócio | 12 resumos mensais do ano (linha do tempo)            |
+
+**Sem tabela de faturas.** A recorrência é calculada de `valor_mensal` + período
+do projeto (`data_inicio`/`data_fim`, ambos opcionais = em aberto), cruzando com
+as transações `ganho` de `origem=recorrencia` no mês:
+
+- **previsto** = `valor_mensal` se o projeto está ativo no mês (0 se inativo);
+- **recebido** = soma dos ganhos de recorrência do projeto no mês;
+- **pendente** = `previsto − recebido`, nunca negativo.
+
+Um projeto entra no resultado do mês se estiver **ativo** naquele mês **ou** se
+tiver recebido recorrência nele. Parâmetros: `ano`, `mes` (default = mês atual),
+`project_id` (opcional). `timeline` aceita `ano` e `project_id`.
 
 ## Estrutura
 

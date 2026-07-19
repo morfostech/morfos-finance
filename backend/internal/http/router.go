@@ -21,6 +21,7 @@ type Router struct {
 	Projects     *handlers.ProjectHandler
 	Transactions *handlers.TransactionHandler
 	Categories   *handlers.CategoryHandler
+	Recurrence   *handlers.RecurrenceHandler
 	Authn        *middleware.Authenticator
 	CORSOrigins  []string
 }
@@ -64,6 +65,13 @@ func (rt *Router) Build() http.Handler {
 
 			// Categories: readable by any authenticated user.
 			r.Get("/categories", rt.Categories.List)
+
+			// Company financial views: admin and sócio only.
+			r.Group(func(r chi.Router) {
+				r.Use(middleware.RequireRole(domain.RoleAdmin, domain.RoleSocio))
+				r.Get("/recurrence", rt.Recurrence.Month)
+				r.Get("/recurrence/timeline", rt.Recurrence.Timeline)
+			})
 
 			r.Group(func(r chi.Router) {
 				r.Use(middleware.RequireRole(domain.RoleAdmin))
