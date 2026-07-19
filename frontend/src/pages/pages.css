@@ -1,0 +1,150 @@
+.table-wrap {
+  overflow-x: auto;
+}
+tr.clickable {
+  cursor: pointer;
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--mist);
+  margin-bottom: 18px;
+  transition: color 0.2s;
+}
+.back-link:hover {
+  color: var(--teal);
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.panel {
+  padding: 24px;
+}
+.meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.meta-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+.meta-row:first-child {
+  border-top: none;
+}
+.meta-row .k {
+  color: var(--mist);
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+
+.inst-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+}
+.inst-row:first-child {
+  border-top: none;
+}
+.inst-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.inst-tipo {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 15px;
+  text-transform: capitalize;
+}
+.inst-val {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--mist);
+}
+.inst-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.list-file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 0;
+  border-top: 1px solid var(--line);
+  font-size: 14px;
+}
+.list-file:first-child {
+  border-top: none;
+}
+.list-file a {
+  color: var(--teal);
+}
+.file-ext {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 3px 7px;
+  color: var(--mist);
+}
+
+.tx-ganho { color: var(--teal); }
+.tx-despesa { color: var(--copper); }
+
+.filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+.filters .field {
+  min-width: 130px;
+}
+
+.member-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--r-btn);
+  padding: 14px;
+  min-width: 220px;
+}
+.member-opt {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.member-opt input {
+  accent-color: var(--teal);
+}

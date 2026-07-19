@@ -2,7 +2,7 @@
 
 Sistema interno de controle financeiro da Morfos Tech. Backend em Go (Chi + PostgreSQL), frontend em React + TypeScript, identidade visual alinhada ao site da Morfos.
 
-> Em construção por módulos: **auth ✅ → projetos ✅ → transações ✅ → recorrência ✅ → anexos ✅ → dashboards ✅ → tema/UI**.
+> Módulos: **auth ✅ · projetos ✅ · transações ✅ · recorrência ✅ · anexos ✅ · dashboards ✅ · frontend/tema ✅**.
 
 > **Valores monetários** trafegam na API em **centavos** (inteiro), nunca float. Ex.: `500000` = R$ 5.000,00.
 
@@ -30,10 +30,16 @@ go run ./cmd/seed
 
 # 4. Subir a API
 go run ./cmd/api              # http://localhost:8080
+
+# 5. Frontend (em outro terminal)
+cd ../frontend
+npm install
+npm run dev                   # http://localhost:5173 (proxy /api -> :8080)
 ```
 
 A API aplica as migrations pendentes automaticamente ao subir. `go run ./cmd/seed` é
-idempotente — se o admin já existe, não faz nada.
+idempotente — se o admin já existe, não faz nada. O front (Vite) faz proxy de
+`/api` e `/uploads` para o backend, então basta abrir `http://localhost:5173`.
 
 ### Variáveis de ambiente
 
@@ -169,6 +175,28 @@ recortes `por_projeto` e `por_colaborador`.
 
 **`me`** traz `ganhos`/`despesas`/`saldo` do colaborador no período e seus
 `projetos` alocados.
+
+## Frontend (React + TypeScript)
+
+SPA em Vite + React 18 + TS, **CSS Modules/vanilla com os tokens da Morfos**
+(`src/styles/tokens.css`, extraídos do site) — tema escuro, acentos teal/copper,
+tipografia Space Grotesk / Manrope / Space Mono, kickers em maiúsculas e seções
+numeradas, sem lib de UI.
+
+- **Login** por e-mail/senha, com **troca obrigatória no 1º acesso**.
+- **Dashboard** — visão de empresa (admin/sócio) com saldo em caixa, a receber ×
+  recebido, ganhos por origem, despesas por categoria, recorrência do mês e
+  recortes por projeto/colaborador; visão pessoal (colaborador) com seus números
+  e projetos.
+- **Projetos** — lista, criação, e detalhe com parcelas (marcar paga/pendente),
+  colaboradores e upload de propostas.
+- **Transações** — lista com filtros (tipo/período), criação e soft delete.
+- **Recorrência** — resumo mensal + linha do tempo do ano (admin/sócio).
+- **Usuários** — cadastro e reset de senha (admin).
+
+O `AuthContext` guarda o JWT em `localStorage`; rotas são protegidas por
+autenticação e por papel. Valores monetários são formatados de centavos para BRL
+no cliente.
 
 ## Estrutura
 

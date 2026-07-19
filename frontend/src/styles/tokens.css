@@ -1,0 +1,29 @@
+/* Morfos Tech design tokens — extracted from the marketing site (public/index.html). */
+:root {
+  --ink: #0b1014;
+  --ink-2: #10171d;
+  --graphite: #1a242b;
+  --teal: #16b0a0;
+  --teal-deep: #0c7c75;
+  --copper: #d08b57;
+  --bone: #f3f4f0;
+  --mist: #aeb6b2;
+  --line: rgba(255, 255, 255, 0.1);
+  --danger: #e5674b;
+  --danger-soft: rgba(229, 103, 75, 0.14);
+  --ok-soft: rgba(22, 176, 160, 0.14);
+  --copper-soft: rgba(208, 139, 87, 0.16);
+
+  --grad: linear-gradient(125deg, var(--teal) 0%, var(--teal-deep) 40%, var(--copper) 100%);
+
+  --display: "Space Grotesk", sans-serif;
+  --body: "Manrope", sans-serif;
+  --mono: "Space Mono", monospace;
+
+  --r-btn: 8px;
+  --r-card: 12px;
+  --r-modal: 16px;
+  --r-pill: 999px;
+
+  --shadow-card: 0 40px 80px -30px rgba(0, 0, 0, 0.7);
+}
