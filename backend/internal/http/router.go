@@ -2,6 +2,7 @@ package http
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -138,5 +139,25 @@ func (rt *Router) Build() http.Handler {
 		r.Handle("/*", newSPAHandler(rt.FrontendDir))
 	}
 
-	return r
+	return withFinancePrefix(r)
+}
+
+// withFinancePrefix keeps the Railway service usable directly while allowing
+// the main Morfos Tech domain to proxy the complete app under /finance.
+func withFinancePrefix(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/" || r.URL.Path == "/finance" {
+			http.Redirect(w, r, "/finance/", http.StatusTemporaryRedirect)
+			return
+		}
+		if strings.HasPrefix(r.URL.Path, "/finance/") {
+			request := r.Clone(r.Context())
+			requestURL := *r.URL
+			requestURL.Path = strings.TrimPrefix(r.URL.Path, "/finance")
+			request.URL = &requestURL
+			next.ServeHTTP(w, request)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }

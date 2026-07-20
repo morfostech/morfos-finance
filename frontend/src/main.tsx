@@ -8,7 +8,7 @@ import "./components/ui.css";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter>
+    <BrowserRouter basename="/finance">
       <AuthProvider>
         <App />
       </AuthProvider>

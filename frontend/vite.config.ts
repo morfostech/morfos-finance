@@ -8,12 +8,19 @@ export default defineConfig(({ mode }) => {
   const apiTarget = env.VITE_API_PROXY_TARGET || "http://localhost:8080";
 
   return {
+    base: "/finance/",
     plugins: [react()],
     server: {
       port: 5173,
       proxy: {
-        "/api": apiTarget,
-        "/uploads": apiTarget,
+        "/finance/api": {
+          target: apiTarget,
+          rewrite: (path) => path.replace(/^\/finance/, ""),
+        },
+        "/finance/uploads": {
+          target: apiTarget,
+          rewrite: (path) => path.replace(/^\/finance/, ""),
+        },
       },
     },
   };
