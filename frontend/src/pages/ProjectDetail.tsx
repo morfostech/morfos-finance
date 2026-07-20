@@ -4,7 +4,7 @@ import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { useAsync } from "../lib/hooks";
 import { date, money, todayISO } from "../lib/format";
-import type { Installment, Project, Proposal, User } from "../lib/types";
+import { canManage, type Installment, type Project, type Proposal, type User } from "../lib/types";
 import { Empty, ErrorBanner, SectionHead, Spinner } from "../components/ui";
 import { PaidPill, StatusPill } from "../components/pills";
 import "./pages.css";
@@ -12,7 +12,7 @@ import "./pages.css";
 export function ProjectDetail() {
   const { id } = useParams();
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
+  const isAdmin = canManage(user?.role);
   const { data: project, loading, error, reload } = useAsync<Project>(() => api.get(`/projects/${id}`), [id]);
   const proposals = useAsync<Proposal[]>(() => api.get(`/projects/${id}/proposals`), [id]);
   const users = useAsync<User[]>(() => (isAdmin ? api.get("/users") : Promise.resolve([])), [id, isAdmin]);

@@ -40,7 +40,7 @@ export function App() {
           <Route element={<RoleGate roles={["admin", "socio"]} />}>
             <Route path="/recorrencia" element={<Recurrence />} />
           </Route>
-          <Route element={<RoleGate roles={["admin"]} />}>
+          <Route element={<RoleGate roles={["admin", "socio"]} />}>
             <Route path="/usuarios" element={<Users />} />
           </Route>
         </Route>

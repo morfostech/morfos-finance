@@ -28,7 +28,7 @@ const NAV: NavItem[] = [
   { to: "/projetos", label: "Projetos", idx: "02" },
   { to: "/transacoes", label: "Transações", idx: "03" },
   { to: "/recorrencia", label: "Recorrência", idx: "04", roles: ["admin", "socio"] },
-  { to: "/usuarios", label: "Usuários", idx: "05", roles: ["admin"] },
+  { to: "/usuarios", label: "Usuários", idx: "05", roles: ["admin", "socio"] },
 ];
 
 export function AppShell() {

@@ -4,7 +4,7 @@ import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { useAsync } from "../lib/hooks";
 import { money, toCentavos } from "../lib/format";
-import type { Project } from "../lib/types";
+import { canManage, type Project } from "../lib/types";
 import { Empty, ErrorBanner, SectionHead, Spinner } from "../components/ui";
 import { Modal } from "../components/Modal";
 import { StatusPill } from "../components/pills";
@@ -13,7 +13,7 @@ import "./pages.css";
 export function Projects() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const isAdmin = user?.role === "admin";
+  const isAdmin = canManage(user?.role);
   const { data, loading, error, reload } = useAsync<Project[]>(() => api.get("/projects"), []);
   const [creating, setCreating] = useState(false);
 

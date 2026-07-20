@@ -66,12 +66,15 @@ gating de permissões por cargo (admin/sócio/colaborador).
 | POST   | `/api/auth/login`                 | —           | Login por e-mail/senha, retorna JWT         |
 | GET    | `/api/auth/me`                    | Autenticado | Dados do usuário atual                      |
 | POST   | `/api/auth/change-password`       | Autenticado | Troca a própria senha (cobre 1º login)      |
-| GET    | `/api/users`                      | Admin       | Lista usuários                              |
-| POST   | `/api/users`                      | Admin       | Cria usuário com senha inicial              |
-| POST   | `/api/users/{id}/reset-password`  | Admin       | Reseta senha (força troca no próximo login) |
+| GET    | `/api/users`                      | Admin / Sócio | Lista usuários                              |
+| POST   | `/api/users`                      | Admin / Sócio | Cria usuário com senha inicial              |
+| POST   | `/api/users/{id}/reset-password`  | Admin / Sócio | Reseta senha (força troca no próximo login) |
 
-**Papéis:** `admin` (vê/edita tudo, gerencia usuários), `socio` (visão financeira
-completa, somente leitura), `colaborador` (apenas a própria área). Usuários novos
+**Papéis:** `admin` e `socio` têm **o mesmo acesso** — veem e editam tudo
+(projetos, transações, anexos, usuários). A diferença é só de contexto: no
+dashboard, o sócio (e o admin) pode alternar entre a visão da empresa e uma
+**visão individual** (seus próprios ganhos/despesas/projetos), como um
+colaborador teria. `colaborador` só vê e edita a própria área. Usuários novos
 nascem com `must_change_password = true`.
 
 ## API — módulo Projetos
@@ -80,10 +83,10 @@ nascem com `must_change_password = true`.
 |--------|-----------------------------------------------|-------------|-------------------------------------------------------------|
 | GET    | `/api/projects`                               | Autenticado | Lista projetos (colaborador vê só os alocados)              |
 | GET    | `/api/projects/{id}`                          | Autenticado | Projeto + parcelas + membros (colaborador só se alocado)   |
-| POST   | `/api/projects`                               | Admin       | Cria projeto; gera parcelas 50/50 se houver implementação   |
-| PUT    | `/api/projects/{id}`                          | Admin       | Atualiza campos; reconcilia parcelas de implementação       |
-| PUT    | `/api/projects/{id}/members`                  | Admin       | Define a lista de colaboradores alocados                    |
-| PATCH  | `/api/projects/{id}/installments/{iid}`       | Admin       | Marca parcela paga (`pago_em`) ou pendente (`null`)         |
+| POST   | `/api/projects`                               | Admin / Sócio | Cria projeto; gera parcelas 50/50 se houver implementação   |
+| PUT    | `/api/projects/{id}`                          | Admin / Sócio | Atualiza campos; reconcilia parcelas de implementação       |
+| PUT    | `/api/projects/{id}/members`                  | Admin / Sócio | Define a lista de colaboradores alocados                    |
+| PATCH  | `/api/projects/{id}/installments/{iid}`       | Admin / Sócio | Marca parcela paga (`pago_em`) ou pendente (`null`)         |
 
 **Fontes de receita:** um projeto tem `valor_implementacao` e/ou `valor_mensal`
 (ao menos um). A implementação vira **duas parcelas** — `entrada` (50%, arredondada
@@ -99,12 +102,12 @@ parcelas são regeradas. Mensalidade sozinha não gera parcelas.
 |--------|-----------------------------|-------------|--------------------------------------------------------|
 | GET    | `/api/transactions`         | Autenticado | Lista com filtros (colaborador vê só as próprias)      |
 | GET    | `/api/transactions/{id}`    | Autenticado | Uma transação (colaborador só as próprias)             |
-| POST   | `/api/transactions`         | Admin       | Cria ganho/despesa (carimba `created_by`)              |
-| PUT    | `/api/transactions/{id}`    | Admin       | Edita transação                                        |
-| DELETE | `/api/transactions/{id}`    | Admin       | Soft delete (`deleted_at`; a linha permanece)          |
+| POST   | `/api/transactions`         | Admin / Sócio | Cria ganho/despesa (carimba `created_by`)              |
+| PUT    | `/api/transactions/{id}`    | Admin / Sócio | Edita transação                                        |
+| DELETE | `/api/transactions/{id}`    | Admin / Sócio | Soft delete (`deleted_at`; a linha permanece)          |
 | GET    | `/api/categories`           | Autenticado | Lista categorias de despesa                            |
-| POST   | `/api/categories`           | Admin       | Cria categoria                                         |
-| DELETE | `/api/categories/{id}`      | Admin       | Remove categoria (`409` se em uso por transações)      |
+| POST   | `/api/categories`           | Admin / Sócio | Cria categoria                                         |
+| DELETE | `/api/categories/{id}`      | Admin / Sócio | Remove categoria (`409` se em uso por transações)      |
 
 **Regras de transação:** `valor` positivo (centavos) e `data` obrigatórios.
 `ganho` aceita `origem` (`implementacao`/`recorrencia`/`avulso`) e nunca categoria;
@@ -139,13 +142,13 @@ Uploads são `multipart/form-data` com o campo **`file`** e `descricao` opcional
 
 | Método | Rota                                                    | Auth        | Descrição                                  |
 |--------|---------------------------------------------------------|-------------|--------------------------------------------|
-| POST   | `/api/transactions/{id}/attachments`                    | Admin       | Comprovante de transação (PDF/PNG/JPG/JPEG)|
+| POST   | `/api/transactions/{id}/attachments`                    | Admin / Sócio | Comprovante de transação (PDF/PNG/JPG/JPEG)|
 | GET    | `/api/transactions/{id}/attachments`                    | Autenticado | Lista comprovantes da transação            |
-| POST   | `/api/projects/{id}/installments/{iid}/attachments`     | Admin       | Comprovante de parcela                      |
-| DELETE | `/api/attachments/{id}`                                 | Admin       | Remove comprovante (DB + objeto)           |
-| POST   | `/api/projects/{id}/proposals`                          | Admin       | Proposta comercial (PDF/DOCX)              |
+| POST   | `/api/projects/{id}/installments/{iid}/attachments`     | Admin / Sócio | Comprovante de parcela                      |
+| DELETE | `/api/attachments/{id}`                                 | Admin / Sócio | Remove comprovante (DB + objeto)           |
+| POST   | `/api/projects/{id}/proposals`                          | Admin / Sócio | Proposta comercial (PDF/DOCX)              |
 | GET    | `/api/projects/{id}/proposals`                          | Autenticado | Lista propostas do projeto                 |
-| DELETE | `/api/proposals/{id}`                                   | Admin       | Remove proposta                             |
+| DELETE | `/api/proposals/{id}`                                   | Admin / Sócio | Remove proposta                             |
 
 **Storage** atrás de uma interface (`internal/storage`): sem variáveis `S3_*`, os
 arquivos vão para **disco local** (`UPLOAD_DIR`, servidos em `/uploads`); com

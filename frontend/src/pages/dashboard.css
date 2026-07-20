@@ -1,3 +1,31 @@
+.view-toggle {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--ink-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  padding: 4px;
+  margin-bottom: 22px;
+}
+.view-toggle button {
+  border: none;
+  background: transparent;
+  color: var(--mist);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: var(--r-pill);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.view-toggle button.active {
+  background: var(--grad);
+  color: #06231f;
+}
+.view-toggle button:not(.active):hover {
+  color: var(--bone);
+}
+
 .dash {
   display: flex;
   flex-direction: column;

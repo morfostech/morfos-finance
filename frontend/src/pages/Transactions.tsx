@@ -3,14 +3,14 @@ import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { useAsync } from "../lib/hooks";
 import { date, money, todayISO, toCentavos } from "../lib/format";
-import type { Category, Project, Transaction, TxType, User } from "../lib/types";
+import { canManage, type Category, type Project, type Transaction, type TxType, type User } from "../lib/types";
 import { Empty, ErrorBanner, Spinner } from "../components/ui";
 import { Modal } from "../components/Modal";
 import "./pages.css";
 
 export function Transactions() {
   const { user } = useAuth();
-  const isAdmin = user?.role === "admin";
+  const isAdmin = canManage(user?.role);
 
   const [tipo, setTipo] = useState("");
   const [from, setFrom] = useState("");

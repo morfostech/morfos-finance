@@ -66,7 +66,7 @@ func (rt *Router) Build() http.Handler {
 			r.Post("/auth/change-password", rt.Auth.ChangePassword)
 
 			// Projects: readable by any authenticated user (service scopes
-			// colaboradores to their allocations); writes are admin-only.
+			// colaboradores to their allocations); writes are admin/sócio.
 			r.Get("/projects", rt.Projects.List)
 			r.Get("/projects/{id}", rt.Projects.Get)
 
@@ -84,16 +84,13 @@ func (rt *Router) Build() http.Handler {
 			// Personal dashboard: any authenticated user (scoped to self).
 			r.Get("/dashboard/me", rt.Dashboard.Me)
 
-			// Company financial views: admin and sócio only.
+			// Admin and sócio share full management access; colaborador excluded.
 			r.Group(func(r chi.Router) {
 				r.Use(middleware.RequireRole(domain.RoleAdmin, domain.RoleSocio))
+
 				r.Get("/recurrence", rt.Recurrence.Month)
 				r.Get("/recurrence/timeline", rt.Recurrence.Timeline)
 				r.Get("/dashboard/company", rt.Dashboard.Company)
-			})
-
-			r.Group(func(r chi.Router) {
-				r.Use(middleware.RequireRole(domain.RoleAdmin))
 
 				r.Post("/projects", rt.Projects.Create)
 				r.Put("/projects/{id}", rt.Projects.Update)

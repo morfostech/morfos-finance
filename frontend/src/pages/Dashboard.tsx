@@ -4,22 +4,36 @@ import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { useAsync } from "../lib/hooks";
 import { currentMonthRange, money, monthLabel } from "../lib/format";
-import type { CompanyDashboard, MeDashboard } from "../lib/types";
+import { canManage, type CompanyDashboard, type MeDashboard } from "../lib/types";
 import { Bar, Empty, ErrorBanner, KpiMoney, SectionHead, Spinner } from "../components/ui";
 import "./dashboard.css";
 
 export function Dashboard() {
   const { user } = useAuth();
-  const isCompany = user?.role === "admin" || user?.role === "socio";
+  const hasCompanyView = canManage(user?.role);
+  const [view, setView] = useState<"empresa" | "pessoal">("empresa");
   const [range, setRange] = useState(currentMonthRange());
+
+  const showCompany = hasCompanyView && view === "empresa";
 
   return (
     <div>
       <header className="page-head">
         <span className="kicker">01 / Visão geral</span>
-        <h1>{isCompany ? "Painel da empresa" : "Meu painel"}</h1>
+        <h1>{showCompany ? "Painel da empresa" : "Meu painel"}</h1>
         <p>Resultados no período selecionado. Saldo em caixa é acumulado de todos os tempos.</p>
       </header>
+
+      {hasCompanyView && (
+        <div className="view-toggle">
+          <button className={view === "empresa" ? "active" : ""} onClick={() => setView("empresa")}>
+            Empresa
+          </button>
+          <button className={view === "pessoal" ? "active" : ""} onClick={() => setView("pessoal")}>
+            Minha visão
+          </button>
+        </div>
+      )}
 
       <div className="toolbar">
         <div className="field">
@@ -36,7 +50,7 @@ export function Dashboard() {
         </button>
       </div>
 
-      {isCompany ? <CompanyView from={range.from} to={range.to} /> : <MeView from={range.from} to={range.to} />}
+      {showCompany ? <CompanyView from={range.from} to={range.to} /> : <MeView from={range.from} to={range.to} />}
     </div>
   );
 }

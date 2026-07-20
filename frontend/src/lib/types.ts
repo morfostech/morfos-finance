@@ -2,6 +2,11 @@
 
 export type Role = "admin" | "socio" | "colaborador";
 
+/** Admin and sócio share full management access; only colaborador is scoped down. */
+export function canManage(role?: Role): boolean {
+  return role === "admin" || role === "socio";
+}
+
 export interface User {
   id: number;
   nome: string;
