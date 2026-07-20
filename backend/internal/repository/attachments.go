@@ -22,16 +22,16 @@ func NewAttachmentRepository(pool *pgxpool.Pool) *AttachmentRepository {
 
 func (r *AttachmentRepository) Create(ctx context.Context, a *domain.Attachment) (*domain.Attachment, error) {
 	row := r.pool.QueryRow(ctx, `
-		INSERT INTO attachments (owner_type, owner_id, url, descricao, created_by)
-		VALUES ($1, $2, $3, $4, $5)
-		RETURNING id, owner_type, owner_id, url, descricao, created_by, created_at`,
-		a.OwnerType, a.OwnerID, a.URL, a.Descricao, a.CreatedBy)
+		INSERT INTO attachments (owner_type, owner_id, url, nome_arquivo, descricao, created_by)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING id, owner_type, owner_id, url, nome_arquivo, descricao, created_by, created_at`,
+		a.OwnerType, a.OwnerID, a.URL, a.NomeArquivo, a.Descricao, a.CreatedBy)
 	return scanAttachment(row)
 }
 
 func (r *AttachmentRepository) ListByOwner(ctx context.Context, ownerType domain.AttachmentOwner, ownerID int64) ([]domain.Attachment, error) {
 	rows, err := r.pool.Query(ctx, `
-		SELECT id, owner_type, owner_id, url, descricao, created_by, created_at
+		SELECT id, owner_type, owner_id, url, nome_arquivo, descricao, created_by, created_at
 		FROM attachments WHERE owner_type = $1 AND owner_id = $2
 		ORDER BY created_at DESC`, ownerType, ownerID)
 	if err != nil {
@@ -53,7 +53,7 @@ func (r *AttachmentRepository) ListByOwner(ctx context.Context, ownerType domain
 // Get returns an attachment by id (used to resolve its storage key on delete).
 func (r *AttachmentRepository) Get(ctx context.Context, id int64) (*domain.Attachment, error) {
 	return scanAttachment(r.pool.QueryRow(ctx, `
-		SELECT id, owner_type, owner_id, url, descricao, created_by, created_at
+		SELECT id, owner_type, owner_id, url, nome_arquivo, descricao, created_by, created_at
 		FROM attachments WHERE id = $1`, id))
 }
 
@@ -70,7 +70,7 @@ func (r *AttachmentRepository) Delete(ctx context.Context, id int64) error {
 
 func scanAttachment(row pgx.Row) (*domain.Attachment, error) {
 	var a domain.Attachment
-	err := row.Scan(&a.ID, &a.OwnerType, &a.OwnerID, &a.URL, &a.Descricao, &a.CreatedBy, &a.CreatedAt)
+	err := row.Scan(&a.ID, &a.OwnerType, &a.OwnerID, &a.URL, &a.NomeArquivo, &a.Descricao, &a.CreatedBy, &a.CreatedAt)
 	if err == pgx.ErrNoRows {
 		return nil, domain.ErrNotFound
 	}
@@ -84,10 +84,10 @@ func scanAttachment(row pgx.Row) (*domain.Attachment, error) {
 
 func (r *AttachmentRepository) CreateProposal(ctx context.Context, p *domain.Proposal) (*domain.Proposal, error) {
 	row := r.pool.QueryRow(ctx, `
-		INSERT INTO project_proposals (project_id, url, arquivo_tipo, descricao, created_by)
-		VALUES ($1, $2, $3, $4, $5)
-		RETURNING id, project_id, url, arquivo_tipo, descricao, created_by, created_at`,
-		p.ProjectID, p.URL, p.ArquivoTipo, p.Descricao, p.CreatedBy)
+		INSERT INTO project_proposals (project_id, url, arquivo_tipo, nome_arquivo, descricao, created_by)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		RETURNING id, project_id, url, arquivo_tipo, nome_arquivo, descricao, created_by, created_at`,
+		p.ProjectID, p.URL, p.ArquivoTipo, p.NomeArquivo, p.Descricao, p.CreatedBy)
 	proposal, err := scanProposal(row)
 	if isForeignKeyViolation(err) {
 		return nil, domain.ErrNotFound // project doesn't exist
@@ -97,7 +97,7 @@ func (r *AttachmentRepository) CreateProposal(ctx context.Context, p *domain.Pro
 
 func (r *AttachmentRepository) ListProposals(ctx context.Context, projectID int64) ([]domain.Proposal, error) {
 	rows, err := r.pool.Query(ctx, `
-		SELECT id, project_id, url, arquivo_tipo, descricao, created_by, created_at
+		SELECT id, project_id, url, arquivo_tipo, nome_arquivo, descricao, created_by, created_at
 		FROM project_proposals WHERE project_id = $1
 		ORDER BY created_at DESC`, projectID)
 	if err != nil {
@@ -118,7 +118,7 @@ func (r *AttachmentRepository) ListProposals(ctx context.Context, projectID int6
 
 func (r *AttachmentRepository) GetProposal(ctx context.Context, id int64) (*domain.Proposal, error) {
 	return scanProposal(r.pool.QueryRow(ctx, `
-		SELECT id, project_id, url, arquivo_tipo, descricao, created_by, created_at
+		SELECT id, project_id, url, arquivo_tipo, nome_arquivo, descricao, created_by, created_at
 		FROM project_proposals WHERE id = $1`, id))
 }
 
@@ -135,7 +135,7 @@ func (r *AttachmentRepository) DeleteProposal(ctx context.Context, id int64) err
 
 func scanProposal(row pgx.Row) (*domain.Proposal, error) {
 	var p domain.Proposal
-	err := row.Scan(&p.ID, &p.ProjectID, &p.URL, &p.ArquivoTipo, &p.Descricao, &p.CreatedBy, &p.CreatedAt)
+	err := row.Scan(&p.ID, &p.ProjectID, &p.URL, &p.ArquivoTipo, &p.NomeArquivo, &p.Descricao, &p.CreatedBy, &p.CreatedAt)
 	if err == pgx.ErrNoRows {
 		return nil, domain.ErrNotFound
 	}

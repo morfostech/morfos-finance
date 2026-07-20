@@ -74,6 +74,11 @@ func (s *AttachmentService) AttachToInstallment(ctx context.Context, projectID, 
 }
 
 func (s *AttachmentService) attachComprovante(ctx context.Context, ownerType domain.AttachmentOwner, ownerID int64, u Upload, createdBy int64) (*domain.Attachment, error) {
+	filename, err := normalizeUploadFilename(u.Filename)
+	if err != nil {
+		return nil, err
+	}
+	u.Filename = filename
 	contentType, err := validateComprovante(u, s.maxBytes)
 	if err != nil {
 		return nil, err
@@ -84,11 +89,12 @@ func (s *AttachmentService) attachComprovante(ctx context.Context, ownerType dom
 		return nil, err
 	}
 	return s.repo.Create(ctx, &domain.Attachment{
-		OwnerType: ownerType,
-		OwnerID:   ownerID,
-		URL:       url,
-		Descricao: u.Descricao,
-		CreatedBy: &createdBy,
+		OwnerType:   ownerType,
+		OwnerID:     ownerID,
+		URL:         url,
+		NomeArquivo: &filename,
+		Descricao:   u.Descricao,
+		CreatedBy:   &createdBy,
 	})
 }
 
@@ -121,6 +127,11 @@ func (s *AttachmentService) AttachProposal(ctx context.Context, projectID int64,
 	if _, err := s.projects.GetByID(ctx, projectID); err != nil {
 		return nil, err
 	}
+	filename, err := normalizeUploadFilename(u.Filename)
+	if err != nil {
+		return nil, err
+	}
+	u.Filename = filename
 	tipo, contentType, err := validateProposal(u, s.maxBytes)
 	if err != nil {
 		return nil, err
@@ -134,6 +145,7 @@ func (s *AttachmentService) AttachProposal(ctx context.Context, projectID int64,
 		ProjectID:   projectID,
 		URL:         url,
 		ArquivoTipo: tipo,
+		NomeArquivo: &filename,
 		Descricao:   u.Descricao,
 		CreatedBy:   &createdBy,
 	})

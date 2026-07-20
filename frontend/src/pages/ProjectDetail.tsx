@@ -57,7 +57,9 @@ export function ProjectDetail() {
               proposals.data.map((p) => (
                 <div key={p.id} className="list-file">
                   <span className="file-ext">{p.arquivo_tipo}</span>
-                  <a href={p.url} target="_blank" rel="noreferrer">{p.descricao ?? "Proposta"}</a>
+                  <a href={p.url} target="_blank" rel="noreferrer" title={p.descricao}>
+                    {p.nome_arquivo ?? p.descricao ?? `Proposta.${p.arquivo_tipo}`}
+                  </a>
                   {isAdmin && (
                     <button
                       className="btn btn-danger btn-sm"
