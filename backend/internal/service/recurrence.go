@@ -52,6 +52,22 @@ func (s *RecurrenceService) Year(ctx context.Context, ano int, projectID *int64)
 	return out, nil
 }
 
+// Forecast projects recurring revenue over a bounded number of months,
+// starting with the month containing start.
+func (s *RecurrenceService) Forecast(ctx context.Context, start time.Time, months int, projectID *int64) (*domain.RecurrenceForecast, error) {
+	if months < 1 || months > 60 {
+		return nil, fmt.Errorf("%w: horizonte deve estar entre 1 e 60 meses", domain.ErrValidation)
+	}
+	monthStart, _ := domain.MonthBounds(start.Year(), start.Month())
+	lastMonth := monthStart.AddDate(0, months-1, 0)
+	_, rangeEnd := domain.MonthBounds(lastMonth.Year(), lastMonth.Month())
+	rows, err := s.repo.MonthRows(ctx, monthStart, rangeEnd, projectID)
+	if err != nil {
+		return nil, err
+	}
+	return domain.BuildForecast(monthStart, months, rows), nil
+}
+
 func validateMonth(ano, mes int) error {
 	if err := validateYear(ano); err != nil {
 		return err

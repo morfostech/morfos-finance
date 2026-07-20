@@ -62,6 +62,7 @@ type CompanyDashboard struct {
 	Implementacao        ImplementacaoTotals `json:"implementacao"`
 	ParcelasPendentes    PendingInstallments `json:"parcelas_pendentes"`
 	RecorrenciaMes       *RecurrenceSummary  `json:"recorrencia_mes"`
+	RecorrenciaFutura    *RecurrenceForecast `json:"recorrencia_futura"`
 	PorProjeto           []ProjectTotals     `json:"por_projeto"`
 	PorColaborador       []UserTotals        `json:"por_colaborador"`
 }

@@ -71,6 +71,11 @@ func TestCompanyDashboardMath(t *testing.T) {
 	if dash.RecorrenciaMes == nil || dash.RecorrenciaMes.Mes != 7 {
 		t.Errorf("recorrência do mês ausente ou mês errado: %+v", dash.RecorrenciaMes)
 	}
+	if dash.RecorrenciaFutura == nil || dash.RecorrenciaFutura.HorizonteMeses != 12 || len(dash.RecorrenciaFutura.Meses) != 12 {
+		t.Errorf("previsão de recorrência ausente ou inválida: %+v", dash.RecorrenciaFutura)
+	} else if dash.RecorrenciaFutura.Meses[0].Mes != 8 {
+		t.Errorf("previsão deveria começar em agosto: %+v", dash.RecorrenciaFutura.Meses[0])
+	}
 	// Empty slices, never nil, for stable JSON.
 	if dash.DespesasPorCategoria == nil || dash.PorProjeto == nil || dash.PorColaborador == nil {
 		t.Error("slices devem ser [] e não nil")

@@ -99,3 +99,29 @@ func TestBuildSummary(t *testing.T) {
 		t.Errorf("projeto D inesperado: %+v", d)
 	}
 }
+
+func TestBuildForecastRespectsProjectPeriods(t *testing.T) {
+	rows := []RecurrenceRow{
+		{ProjectID: 1, Nome: "Open", ValorMensal: 5000, DataInicio: dptr("2026-08-10")},
+		{ProjectID: 2, Nome: "Limited", ValorMensal: 8000, DataInicio: dptr("2026-09-01"), DataFim: dptr("2026-10-31")},
+		{ProjectID: 3, Nome: "Finished", ValorMensal: 10000, DataFim: dptr("2026-07-31")},
+	}
+
+	forecast := BuildForecast(time.Date(2026, time.August, 1, 0, 0, 0, 0, time.UTC), 12, rows)
+
+	if forecast.HorizonteMeses != 12 || len(forecast.Meses) != 12 {
+		t.Fatalf("horizonte inesperado: %+v", forecast)
+	}
+	if forecast.Meses[0].Ano != 2026 || forecast.Meses[0].Mes != 8 || forecast.Meses[0].Previsto != 5000 {
+		t.Errorf("agosto inesperado: %+v", forecast.Meses[0])
+	}
+	if forecast.Meses[1].Previsto != 13000 || forecast.Meses[2].Previsto != 13000 {
+		t.Errorf("setembro/outubro inesperados: %+v", forecast.Meses[1:3])
+	}
+	if forecast.Meses[3].Previsto != 5000 {
+		t.Errorf("novembro inesperado: %+v", forecast.Meses[3])
+	}
+	if forecast.Total != 76000 {
+		t.Errorf("total = %d, want 76000", forecast.Total)
+	}
+}
