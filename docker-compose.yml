@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: morfos-finance-db
+    environment:
+      POSTGRES_USER: morfos
+      POSTGRES_PASSWORD: morfos
+      POSTGRES_DB: morfos_finance
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U morfos -d morfos_finance"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

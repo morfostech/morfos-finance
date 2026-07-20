@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 412 150" width="412" height="150">
+<defs><linearGradient id="g" x1="8" y1="16" x2="92" y2="86" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#16B0A0"></stop><stop offset="0.42" stop-color="#0C7C75"></stop><stop offset="1" stop-color="#D08B57"></stop></linearGradient></defs>
+<g transform="translate(4,25)"><path d="M15 82 V27 L50 48 L85 27 V82" fill="none" stroke="url(#g)" stroke-width="15" stroke-linejoin="round" stroke-linecap="round"></path></g>
+<text x="126" y="84" font-family="&#39;Space Grotesk&#39;,sans-serif" font-size="54" font-weight="600" letter-spacing="-1.5" fill="#F3F4F0">MORFOS</text>
+<text x="129" y="114" font-family="&#39;Space Mono&#39;,monospace" font-size="18" letter-spacing="8.5" fill="#AEB6B2">TECH</text>
+</svg>
