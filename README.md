@@ -56,6 +56,18 @@ com URL direta, o bucket deve ser público e `S3_PUBLIC_BASE_URL` deve ser a URL
 pública do bucket. Para bucket privado, será necessário adicionar geração de URL
 assinada no backend.
 
+### Deploy no Railway
+
+O `Dockerfile` gera o frontend e o backend em uma única imagem. Em produção, o
+servidor Go entrega a SPA e a API no mesmo domínio. O `railway.json` configura o
+health check em `/health`.
+
+Crie um PostgreSQL no mesmo projeto e configure `DATABASE_URL` como referência a
+`${{Postgres.DATABASE_URL}}`. Também são necessárias `JWT_SECRET`, `JWT_TTL` e as
+variáveis `S3_*` descritas acima. O backend só ativa o Supabase Storage quando
+endpoint, bucket, access key e secret key estiverem presentes; antes disso, usa
+o armazenamento local temporário do container.
+
 ## Testes
 
 ```bash
