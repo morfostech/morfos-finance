@@ -116,6 +116,10 @@ tr.clickable {
   color: var(--mist);
 }
 
+.tx-ganho,
+.tx-despesa {
+  white-space: nowrap;
+}
 .tx-ganho { color: var(--teal); }
 .tx-despesa { color: var(--copper); }
 
