@@ -71,6 +71,8 @@ func run() error {
 	recurrenceSvc := service.NewRecurrenceService(recurrenceRepo)
 	attachmentSvc := service.NewAttachmentService(attachmentRepo, store, txRepo, projectRepo, projectRepo, cfg.Storage.MaxUploadBytes)
 	dashboardSvc := service.NewDashboardService(repository.NewDashboardRepository(pool), recurrenceSvc, projectSvc)
+	noteSvc := service.NewNoteService(repository.NewNoteRepository(pool))
+	changeRequestSvc := service.NewChangeRequestService(repository.NewChangeRequestRepository(pool), noteSvc)
 
 	localUploadDir := ""
 	if !cfg.Storage.UseS3() {
@@ -85,6 +87,8 @@ func run() error {
 		Recurrence:     handlers.NewRecurrenceHandler(recurrenceSvc),
 		Attachments:    handlers.NewAttachmentHandler(attachmentSvc, cfg.Storage.MaxUploadBytes),
 		Dashboard:      handlers.NewDashboardHandler(dashboardSvc),
+		Notes:          handlers.NewNoteHandler(noteSvc),
+		ChangeRequests: handlers.NewChangeRequestHandler(changeRequestSvc),
 		Authn:          middleware.NewAuthenticator(tokens),
 		CORSOrigins:    cfg.CORSOrigins,
 		LocalUploadDir: localUploadDir,

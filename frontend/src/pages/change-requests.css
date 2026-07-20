@@ -1,0 +1,70 @@
+.request-list {
+  display: grid;
+  gap: 12px;
+}
+.request-item {
+  padding: 18px 20px;
+}
+.request-head,
+.request-meta,
+.request-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.request-review {
+  border-top: 1px solid var(--line);
+  margin-top: 16px;
+  padding-top: 14px;
+}
+.request-review label {
+  color: var(--mist);
+  display: block;
+  font-size: 12px;
+  margin-bottom: 7px;
+}
+.request-review textarea {
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--r-btn);
+  color: var(--bone);
+  font: inherit;
+  padding: 10px 12px;
+  resize: vertical;
+  width: 100%;
+}
+.request-review textarea:focus {
+  border-color: var(--teal);
+  outline: none;
+}
+.request-head h2 {
+  font-size: 18px;
+  margin-top: 4px;
+}
+.request-text {
+  margin-top: 16px;
+  white-space: pre-wrap;
+  line-height: 1.55;
+}
+.request-meta {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  color: var(--mist);
+  font-size: 11px;
+  margin-top: 14px;
+}
+.request-comment {
+  border-left: 2px solid var(--line);
+  color: var(--mist);
+  font-size: 13px;
+  margin-top: 14px;
+  padding-left: 12px;
+}
+.request-actions {
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+@media (max-width: 640px) {
+  .request-head { align-items: flex-start; }
+}

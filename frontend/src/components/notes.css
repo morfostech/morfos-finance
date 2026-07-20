@@ -1,0 +1,64 @@
+.notes-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.notes-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.notes-form textarea {
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--r-btn);
+  padding: 11px 13px;
+  color: var(--bone);
+  font-family: inherit;
+  font-size: 14px;
+  resize: vertical;
+  transition: border-color 0.2s;
+}
+.notes-form textarea:focus {
+  outline: none;
+  border-color: var(--teal);
+}
+.notes-form > button {
+  align-self: flex-end;
+}
+.notes-notice {
+  border: 1px solid rgba(22, 176, 160, 0.35);
+  background: rgba(22, 176, 160, 0.08);
+  color: var(--teal);
+  border-radius: var(--r-btn);
+  padding: 11px 14px;
+  font-size: 14px;
+}
+
+.notes-list {
+  display: flex;
+  flex-direction: column;
+}
+.note-item {
+  padding: 14px 0;
+  border-top: 1px solid var(--line);
+}
+.note-item:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+.note-text {
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+.note-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 9px;
+}
+.note-actions {
+  display: flex;
+  gap: 8px;
+}

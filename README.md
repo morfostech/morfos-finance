@@ -47,6 +47,15 @@ Ver [`backend/.env.example`](backend/.env.example). Essenciais: `DATABASE_URL`, 
 Para produção, troque `JWT_SECRET` por um valor longo e aleatório e defina
 `SEED_ADMIN_EMAIL` / `SEED_ADMIN_SENHA` antes de rodar o seed.
 
+Para usar **Supabase Storage**, crie primeiro o bucket, habilite o protocolo S3
+em `Storage > Configuration > S3` e gere as credenciais S3 de servidor. Configure
+`S3_ENDPOINT`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` e
+`S3_REGION` com os valores mostrados nessa tela. As chaves comuns `anon` e
+`service_role` não são usadas pelo cliente S3 atual. Como os anexos são salvos
+com URL direta, o bucket deve ser público e `S3_PUBLIC_BASE_URL` deve ser a URL
+pública do bucket. Para bucket privado, será necessário adicionar geração de URL
+assinada no backend.
+
 ## Testes
 
 ```bash
@@ -74,7 +83,8 @@ gating de permissões por cargo (admin/sócio/colaborador).
 (projetos, transações, anexos, usuários). A diferença é só de contexto: no
 dashboard, o sócio (e o admin) pode alternar entre a visão da empresa e uma
 **visão individual** (seus próprios ganhos/despesas/projetos), como um
-colaborador teria. `colaborador` só vê e edita a própria área. Usuários novos
+colaborador teria. `colaborador` só vê a própria área e qualquer alteração é
+enviada como solicitação para aprovação de admin/sócio. Usuários novos
 nascem com `must_change_password = true`.
 
 ## API — módulo Projetos
@@ -179,6 +189,23 @@ recortes `por_projeto` e `por_colaborador`.
 **`me`** traz `ganhos`/`despesas`/`saldo` do colaborador no período e seus
 `projetos` alocados.
 
+## API — solicitações e anotações
+
+Anotações são sempre listadas no escopo do próprio usuário. Admin e sócio podem
+criar, editar e excluir diretamente. Colaboradores enviam uma solicitação, e a
+mutação só é aplicada quando um admin ou sócio a aprova.
+
+| Método | Rota                                  | Auth          | Descrição                         |
+|--------|---------------------------------------|---------------|-----------------------------------|
+| GET    | `/api/notes`                          | Autenticado   | Lista as próprias anotações       |
+| POST   | `/api/notes`                          | Admin / Sócio | Cria anotação diretamente         |
+| PUT    | `/api/notes/{id}`                     | Admin / Sócio | Edita a própria anotação          |
+| DELETE | `/api/notes/{id}`                     | Admin / Sócio | Exclui a própria anotação         |
+| GET    | `/api/change-requests`                | Autenticado   | Próprias solicitações ou fila completa |
+| POST   | `/api/change-requests`                | Colaborador   | Solicita criação/edição/exclusão  |
+| POST   | `/api/change-requests/{id}/approve`   | Admin / Sócio | Aprova e aplica a alteração       |
+| POST   | `/api/change-requests/{id}/reject`    | Admin / Sócio | Rejeita com justificativa         |
+
 ## Frontend (React + TypeScript)
 
 SPA em Vite + React 18 + TS, **CSS Modules/vanilla com os tokens da Morfos**
@@ -196,6 +223,8 @@ numeradas, sem lib de UI.
 - **Transações** — lista com filtros (tipo/período), criação e soft delete.
 - **Recorrência** — resumo mensal + linha do tempo do ano (admin/sócio).
 - **Usuários** — cadastro e reset de senha (admin).
+- **Anotações** — notas por usuário, projeto ou transação.
+- **Solicitações** — aprovação/rejeição das alterações pedidas por colaboradores.
 
 O `AuthContext` guarda o JWT em `localStorage`; rotas são protegidas por
 autenticação e por papel. Valores monetários são formatados de centavos para BRL

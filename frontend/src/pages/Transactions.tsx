@@ -6,6 +6,7 @@ import { date, money, todayISO, toCentavos } from "../lib/format";
 import { canManage, type Category, type Project, type Transaction, type TxType, type User } from "../lib/types";
 import { Empty, ErrorBanner, Spinner } from "../components/ui";
 import { Modal } from "../components/Modal";
+import { NotesPanel } from "../components/NotesPanel";
 import "./pages.css";
 
 export function Transactions() {
@@ -16,6 +17,7 @@ export function Transactions() {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [creating, setCreating] = useState(false);
+  const [notesFor, setNotesFor] = useState<number | null>(null);
 
   const qs = new URLSearchParams();
   if (tipo) qs.set("tipo", tipo);
@@ -80,7 +82,7 @@ export function Transactions() {
                 <th>Projeto</th>
                 <th>Origem / Categoria</th>
                 <th style={{ textAlign: "right" }}>Valor</th>
-                {isAdmin && <th></th>}
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -95,21 +97,24 @@ export function Transactions() {
                   <td className={`num ${t.tipo === "ganho" ? "tx-ganho" : "tx-despesa"}`} style={{ textAlign: "right" }}>
                     {t.tipo === "ganho" ? "+" : "−"} {money(t.valor)}
                   </td>
-                  {isAdmin && (
-                    <td style={{ textAlign: "right" }}>
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={async () => {
-                          if (confirm("Excluir esta transação? (soft delete)")) {
-                            await api.del(`/transactions/${t.id}`);
-                            reload();
-                          }
-                        }}
-                      >
-                        Excluir
-                      </button>
-                    </td>
-                  )}
+                  <td style={{ textAlign: "right" }}>
+                    <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                      <button className="btn btn-ghost btn-sm" onClick={() => setNotesFor(t.id)}>Notas</button>
+                      {isAdmin && (
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={async () => {
+                            if (confirm("Excluir esta transação? (soft delete)")) {
+                              await api.del(`/transactions/${t.id}`);
+                              reload();
+                            }
+                          }}
+                        >
+                          Excluir
+                        </button>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -127,6 +132,12 @@ export function Transactions() {
             reload();
           }}
         />
+      )}
+
+      {notesFor !== null && (
+        <Modal title="Notas da transação" onClose={() => setNotesFor(null)} width={480}>
+          <NotesPanel ownerType="transaction" ownerId={notesFor} title="" bare />
+        </Modal>
       )}
     </div>
   );

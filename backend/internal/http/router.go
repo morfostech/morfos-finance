@@ -17,15 +17,17 @@ import (
 // Router wires middleware and routes. New feature modules register their routes
 // here as they land.
 type Router struct {
-	Auth         *handlers.AuthHandler
-	Projects     *handlers.ProjectHandler
-	Transactions *handlers.TransactionHandler
-	Categories   *handlers.CategoryHandler
-	Recurrence   *handlers.RecurrenceHandler
-	Attachments  *handlers.AttachmentHandler
-	Dashboard    *handlers.DashboardHandler
-	Authn        *middleware.Authenticator
-	CORSOrigins  []string
+	Auth           *handlers.AuthHandler
+	Projects       *handlers.ProjectHandler
+	Transactions   *handlers.TransactionHandler
+	Categories     *handlers.CategoryHandler
+	Recurrence     *handlers.RecurrenceHandler
+	Attachments    *handlers.AttachmentHandler
+	Dashboard      *handlers.DashboardHandler
+	Notes          *handlers.NoteHandler
+	ChangeRequests *handlers.ChangeRequestHandler
+	Authn          *middleware.Authenticator
+	CORSOrigins    []string
 
 	// LocalUploadDir, when set (disk storage mode), is served at /uploads.
 	LocalUploadDir string
@@ -84,6 +86,12 @@ func (rt *Router) Build() http.Handler {
 			// Personal dashboard: any authenticated user (scoped to self).
 			r.Get("/dashboard/me", rt.Dashboard.Me)
 
+			// Notes are always self-scoped. Collaborators submit mutations through
+			// change requests; direct writes are reserved for admin and partners.
+			r.Get("/notes", rt.Notes.List)
+			r.Get("/change-requests", rt.ChangeRequests.List)
+			r.With(middleware.RequireRole(domain.RoleColaborador)).Post("/change-requests", rt.ChangeRequests.Create)
+
 			// Admin and sócio share full management access; colaborador excluded.
 			r.Group(func(r chi.Router) {
 				r.Use(middleware.RequireRole(domain.RoleAdmin, domain.RoleSocio))
@@ -91,6 +99,11 @@ func (rt *Router) Build() http.Handler {
 				r.Get("/recurrence", rt.Recurrence.Month)
 				r.Get("/recurrence/timeline", rt.Recurrence.Timeline)
 				r.Get("/dashboard/company", rt.Dashboard.Company)
+				r.Post("/notes", rt.Notes.Create)
+				r.Put("/notes/{id}", rt.Notes.Update)
+				r.Delete("/notes/{id}", rt.Notes.Delete)
+				r.Post("/change-requests/{id}/approve", rt.ChangeRequests.Approve)
+				r.Post("/change-requests/{id}/reject", rt.ChangeRequests.Reject)
 
 				r.Post("/projects", rt.Projects.Create)
 				r.Put("/projects/{id}", rt.Projects.Update)

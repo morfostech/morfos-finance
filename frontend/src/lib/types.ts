@@ -136,3 +136,39 @@ export interface Proposal {
   arquivo_tipo: "pdf" | "docx";
   descricao?: string;
 }
+
+export type NoteOwner = "project" | "transaction" | "installment" | "geral";
+
+export interface Note {
+  id: number;
+  user_id: number;
+  owner_type: NoteOwner;
+  owner_id?: number;
+  texto: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type ChangeRequestAction = "note_create" | "note_update" | "note_delete";
+export type ChangeRequestStatus = "pending" | "approved" | "rejected";
+
+export interface NoteChangePayload {
+  note_id?: number;
+  owner_type?: NoteOwner;
+  owner_id?: number;
+  texto?: string;
+}
+
+export interface ChangeRequest {
+  id: number;
+  requester_id: number;
+  requester_name: string;
+  action: ChangeRequestAction;
+  payload: NoteChangePayload;
+  status: ChangeRequestStatus;
+  reviewer_id?: number;
+  reviewer_name?: string;
+  review_comment?: string;
+  created_at: string;
+  reviewed_at?: string;
+}

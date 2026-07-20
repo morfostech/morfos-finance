@@ -7,6 +7,7 @@ import { date, money, todayISO } from "../lib/format";
 import { canManage, type Installment, type Project, type Proposal, type User } from "../lib/types";
 import { Empty, ErrorBanner, SectionHead, Spinner } from "../components/ui";
 import { PaidPill, StatusPill } from "../components/pills";
+import { NotesPanel } from "../components/NotesPanel";
 import "./pages.css";
 
 export function ProjectDetail() {
@@ -102,6 +103,8 @@ export function ProjectDetail() {
               </div>
             )}
           </div>
+
+          <NotesPanel ownerType="project" ownerId={project.id} title="Minhas anotações sobre este projeto" />
         </div>
       </div>
     </div>
