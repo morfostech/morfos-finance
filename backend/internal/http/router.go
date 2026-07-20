@@ -31,6 +31,8 @@ type Router struct {
 
 	// LocalUploadDir, when set (disk storage mode), is served at /uploads.
 	LocalUploadDir string
+	// FrontendDir, when set in production, serves the compiled React SPA.
+	FrontendDir string
 }
 
 func (rt *Router) Build() http.Handler {
@@ -131,6 +133,10 @@ func (rt *Router) Build() http.Handler {
 			})
 		})
 	})
+
+	if rt.FrontendDir != "" {
+		r.Handle("/*", newSPAHandler(rt.FrontendDir))
+	}
 
 	return r
 }

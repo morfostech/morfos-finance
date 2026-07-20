@@ -92,6 +92,7 @@ func run() error {
 		Authn:          middleware.NewAuthenticator(tokens),
 		CORSOrigins:    cfg.CORSOrigins,
 		LocalUploadDir: localUploadDir,
+		FrontendDir:    cfg.FrontendDir,
 	}
 
 	srv := &http.Server{

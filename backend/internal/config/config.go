@@ -17,6 +17,7 @@ type Config struct {
 	JWTSecret   string
 	JWTTTL      time.Duration
 	CORSOrigins []string
+	FrontendDir string
 
 	Storage StorageConfig
 
@@ -44,9 +45,9 @@ type StorageConfig struct {
 	MaxUploadBytes int64
 }
 
-// UseS3 reports whether the S3-compatible backend is configured.
+// UseS3 reports whether all required S3-compatible settings are configured.
 func (s StorageConfig) UseS3() bool {
-	return s.Endpoint != "" && s.Bucket != ""
+	return s.Endpoint != "" && s.Bucket != "" && s.AccessKey != "" && s.SecretKey != ""
 }
 
 // Load reads .env if present (ignored in prod where vars are injected), then
@@ -60,6 +61,7 @@ func Load() (*Config, error) {
 		JWTSecret:   os.Getenv("JWT_SECRET"),
 		JWTTTL:      getdur("JWT_TTL", 24*time.Hour),
 		CORSOrigins: splitCSV(getenv("CORS_ORIGINS", "http://localhost:5173")),
+		FrontendDir: os.Getenv("FRONTEND_DIR"),
 		Storage: StorageConfig{
 			Endpoint:       os.Getenv("S3_ENDPOINT"),
 			Bucket:         os.Getenv("S3_BUCKET"),
