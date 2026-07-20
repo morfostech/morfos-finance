@@ -2,6 +2,7 @@
 // Bearer token. Throws ApiError with the backend's message on non-2xx.
 
 const TOKEN_KEY = "morfos_token";
+const BASE_PATH = "/finance";
 
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
@@ -34,7 +35,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     payload = JSON.stringify(body);
   }
 
-  const res = await fetch(`/api${path}`, { method, headers, body: payload });
+  const res = await fetch(`${BASE_PATH}/api${path}`, { method, headers, body: payload });
 
   if (res.status === 204) return undefined as T;
 
