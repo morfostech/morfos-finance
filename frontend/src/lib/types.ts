@@ -116,7 +116,7 @@ export interface CompanyDashboard {
   implementacao: { total: number; recebido: number; a_receber: number };
   parcelas_pendentes: { quantidade: number; total: number };
   recorrencia_mes: RecurrenceSummary;
-  recorrencia_futura: RecurrenceForecast;
+  recorrencia_futura?: RecurrenceForecast;
   por_projeto: { project_id: number; nome: string; ganhos: number; despesas: number }[];
   por_colaborador: { user_id: number; nome: string; ganhos: number; despesas: number }[];
 }

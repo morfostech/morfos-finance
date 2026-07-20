@@ -71,7 +71,8 @@ function CompanyView({ from, to }: { from: string; to: string }) {
 
   const rec = data.recorrencia_mes;
   const forecast = data.recorrencia_futura;
-  const maxForecast = Math.max(1, ...forecast.meses.map((month) => month.previsto));
+  const forecastMonths = forecast?.meses ?? [];
+  const maxForecast = Math.max(1, ...forecastMonths.map((month) => month.previsto));
   const despTotal = data.despesas_por_categoria.reduce((s, c) => s + c.total, 0);
 
   return (
@@ -152,34 +153,38 @@ function CompanyView({ from, to }: { from: string; to: string }) {
               </div>
             ))}
           </div>
-          <div className="forecast">
-            <div className="forecast-head">
-              <div>
-                <span className="split-k mono">Próximos {forecast.horizonte_meses} meses</span>
-                <span className="forecast-note muted">a partir do mês seguinte</span>
-              </div>
-              <strong className="forecast-total num">{money(forecast.total)}</strong>
-            </div>
-            <div className="forecast-chart" aria-label="Previsão mensal de recorrência">
-              {forecast.meses.map((month) => (
-                <div
-                  className="forecast-month"
-                  key={`${month.ano}-${month.mes}`}
-                  title={`${monthLabel(month.mes)}/${month.ano}: ${money(month.previsto)}`}
-                >
-                  <div className="forecast-track">
-                    <span
-                      style={{
-                        height: `${month.previsto === 0 ? 0 : Math.max(4, (month.previsto / maxForecast) * 100)}%`,
-                      }}
-                    />
-                  </div>
-                  <span className="forecast-label mono">{monthLabel(month.mes)}</span>
-                  <span className="forecast-year mono">{String(month.ano).slice(-2)}</span>
+          {forecast ? (
+            <div className="forecast">
+              <div className="forecast-head">
+                <div>
+                  <span className="split-k mono">Próximos {forecast.horizonte_meses} meses</span>
+                  <span className="forecast-note muted">a partir do mês seguinte</span>
                 </div>
-              ))}
+                <strong className="forecast-total num">{money(forecast.total)}</strong>
+              </div>
+              <div className="forecast-chart" aria-label="Previsão mensal de recorrência">
+                {forecastMonths.map((month) => (
+                  <div
+                    className="forecast-month"
+                    key={`${month.ano}-${month.mes}`}
+                    title={`${monthLabel(month.mes)}/${month.ano}: ${money(month.previsto)}`}
+                  >
+                    <div className="forecast-track">
+                      <span
+                        style={{
+                          height: `${month.previsto === 0 ? 0 : Math.max(4, (month.previsto / maxForecast) * 100)}%`,
+                        }}
+                      />
+                    </div>
+                    <span className="forecast-label mono">{monthLabel(month.mes)}</span>
+                    <span className="forecast-year mono">{String(month.ano).slice(-2)}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          ) : (
+            <p className="forecast-unavailable mono">Previsão futura indisponível.</p>
+          )}
         </div>
       </div>
 

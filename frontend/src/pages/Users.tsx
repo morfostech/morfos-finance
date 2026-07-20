@@ -3,7 +3,7 @@ import { api } from "../lib/api";
 import { useAsync } from "../lib/hooks";
 import { ROLE_LABEL } from "../lib/format";
 import type { Role, User } from "../lib/types";
-import { Empty, ErrorBanner, SectionHead, Spinner } from "../components/ui";
+import { Empty, ErrorBanner, SectionHead, Select, Spinner } from "../components/ui";
 import { Modal } from "../components/Modal";
 import "./pages.css";
 
@@ -118,11 +118,16 @@ function NewUserModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
           </div>
           <div className="field">
             <label>Cargo *</label>
-            <select value={role} onChange={(e) => setRole(e.target.value as Role)}>
-              <option value="colaborador">Colaborador</option>
-              <option value="socio">Sócio</option>
-              <option value="admin">Admin</option>
-            </select>
+            <Select
+              ariaLabel="Cargo do usuário"
+              value={role}
+              onChange={(value) => setRole(value as Role)}
+              options={[
+                { value: "colaborador", label: "Colaborador" },
+                { value: "socio", label: "Sócio" },
+                { value: "admin", label: "Admin" },
+              ]}
+            />
           </div>
         </div>
         <div className="modal-actions">

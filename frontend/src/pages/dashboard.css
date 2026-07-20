@@ -167,6 +167,15 @@
 .forecast-year {
   color: var(--fog);
 }
+.forecast-unavailable {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  color: var(--mist);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
 
 .chip-grid {
   display: grid;

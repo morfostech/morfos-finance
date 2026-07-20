@@ -143,10 +143,13 @@
 
 .toolbar {
   display: flex;
-  gap: 12px;
+  gap: 14px;
   align-items: flex-end;
   flex-wrap: wrap;
-  margin-bottom: 22px;
+  margin-bottom: 24px;
+  padding: 16px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 .toolbar .field {
   flex: 0 1 180px;

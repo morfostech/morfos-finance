@@ -4,7 +4,7 @@ import { useAuth } from "../lib/auth";
 import { useAsync } from "../lib/hooks";
 import { date, money, todayISO, toCentavos } from "../lib/format";
 import { canManage, type Category, type Project, type Transaction, type TxType, type User } from "../lib/types";
-import { Empty, ErrorBanner, Spinner } from "../components/ui";
+import { Empty, ErrorBanner, Select, Spinner } from "../components/ui";
 import { Modal } from "../components/Modal";
 import { NotesPanel } from "../components/NotesPanel";
 import "./pages.css";
@@ -46,11 +46,16 @@ export function Transactions() {
       <div className="filters">
         <div className="field">
           <label>Tipo</label>
-          <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
-            <option value="">Todos</option>
-            <option value="ganho">Ganhos</option>
-            <option value="despesa">Despesas</option>
-          </select>
+          <Select
+            ariaLabel="Filtrar por tipo"
+            value={tipo}
+            onChange={setTipo}
+            options={[
+              { value: "", label: "Todos" },
+              { value: "ganho", label: "Ganhos" },
+              { value: "despesa", label: "Despesas" },
+            ]}
+          />
         </div>
         <div className="field">
           <label>De</label>
@@ -204,10 +209,12 @@ function NewTransactionModal({
         <div className="form-row">
           <div className="field">
             <label>Tipo *</label>
-            <select value={tipo} onChange={(e) => setTipo(e.target.value as TxType)}>
-              <option value="ganho">Ganho</option>
-              <option value="despesa">Despesa</option>
-            </select>
+            <Select
+              ariaLabel="Tipo da transação"
+              value={tipo}
+              onChange={(value) => setTipo(value as TxType)}
+              options={[{ value: "ganho", label: "Ganho" }, { value: "despesa", label: "Despesa" }]}
+            />
           </div>
           <div className="field">
             <label>Valor (R$) *</label>
@@ -222,41 +229,52 @@ function NewTransactionModal({
           {tipo === "ganho" ? (
             <div className="field">
               <label>Origem</label>
-              <select value={origem} onChange={(e) => setOrigem(e.target.value)}>
-                <option value="avulso">Avulso</option>
-                <option value="recorrencia">Recorrência</option>
-              </select>
+              <Select
+                ariaLabel="Origem do ganho"
+                value={origem}
+                onChange={setOrigem}
+                options={[{ value: "avulso", label: "Avulso" }, { value: "recorrencia", label: "Recorrência" }]}
+              />
             </div>
           ) : (
             <div className="field">
               <label>Categoria</label>
-              <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-                <option value="">Sem categoria</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.nome}</option>
-                ))}
-              </select>
+              <Select
+                ariaLabel="Categoria da despesa"
+                value={categoryId}
+                onChange={setCategoryId}
+                options={[
+                  { value: "", label: "Sem categoria" },
+                  ...categories.map((category) => ({ value: String(category.id), label: category.nome })),
+                ]}
+              />
             </div>
           )}
         </div>
         <div className="form-row">
           <div className="field">
             <label>Projeto{tipo === "ganho" && origem === "recorrencia" ? " *" : ""}</label>
-            <select value={projectId} onChange={(e) => setProjectId(e.target.value)}>
-              <option value="">—</option>
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>{p.nome}</option>
-              ))}
-            </select>
+            <Select
+              ariaLabel="Projeto da transação"
+              value={projectId}
+              onChange={setProjectId}
+              options={[
+                { value: "", label: "Nenhum projeto" },
+                ...projects.map((project) => ({ value: String(project.id), label: project.nome })),
+              ]}
+            />
           </div>
           <div className="field">
             <label>Colaborador</label>
-            <select value={userId} onChange={(e) => setUserId(e.target.value)}>
-              <option value="">—</option>
-              {(users.data ?? []).map((u) => (
-                <option key={u.id} value={u.id}>{u.nome}</option>
-              ))}
-            </select>
+            <Select
+              ariaLabel="Colaborador da transação"
+              value={userId}
+              onChange={setUserId}
+              options={[
+                { value: "", label: "Nenhum colaborador" },
+                ...(users.data ?? []).map((item) => ({ value: String(item.id), label: item.nome })),
+              ]}
+            />
           </div>
         </div>
         <div className="field">

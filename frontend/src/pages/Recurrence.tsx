@@ -3,7 +3,7 @@ import { api } from "../lib/api";
 import { useAsync } from "../lib/hooks";
 import { money, monthLabel } from "../lib/format";
 import type { RecurrenceSummary } from "../lib/types";
-import { Empty, ErrorBanner, KpiMoney, SectionHead, Spinner } from "../components/ui";
+import { Empty, ErrorBanner, KpiMoney, SectionHead, Select, Spinner } from "../components/ui";
 import "./pages.css";
 import "./dashboard.css";
 
@@ -29,11 +29,15 @@ export function Recurrence() {
       <div className="toolbar">
         <div className="field">
           <label>Mês</label>
-          <select value={mes} onChange={(e) => setMes(Number(e.target.value))}>
-            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-              <option key={m} value={m}>{monthLabel(m)}</option>
-            ))}
-          </select>
+          <Select
+            ariaLabel="Mês da recorrência"
+            value={String(mes)}
+            onChange={(value) => setMes(Number(value))}
+            options={Array.from({ length: 12 }, (_, index) => ({
+              value: String(index + 1),
+              label: monthLabel(index + 1),
+            }))}
+          />
         </div>
         <div className="field">
           <label>Ano</label>
