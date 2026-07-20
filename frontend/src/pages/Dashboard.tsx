@@ -6,6 +6,7 @@ import { useAsync } from "../lib/hooks";
 import { currentMonthRange, money, monthLabel } from "../lib/format";
 import { canManage, type CompanyDashboard, type MeDashboard } from "../lib/types";
 import { Bar, Empty, ErrorBanner, KpiMoney, SectionHead, Spinner } from "../components/ui";
+import { DatePicker } from "../components/DatePicker";
 import "./dashboard.css";
 
 export function Dashboard() {
@@ -42,11 +43,11 @@ export function Dashboard() {
       <div className="toolbar">
         <div className="field">
           <label>De</label>
-          <input type="date" value={range.from} onChange={(e) => setRange({ ...range, from: e.target.value })} />
+          <DatePicker ariaLabel="Data inicial" value={range.from} onChange={(value) => setRange({ ...range, from: value })} />
         </div>
         <div className="field">
           <label>Até</label>
-          <input type="date" value={range.to} onChange={(e) => setRange({ ...range, to: e.target.value })} />
+          <DatePicker ariaLabel="Data final" value={range.to} onChange={(value) => setRange({ ...range, to: value })} />
         </div>
         <div className="toolbar-spacer" />
         <button className="btn btn-ghost btn-sm" onClick={() => setRange(currentMonthRange())}>

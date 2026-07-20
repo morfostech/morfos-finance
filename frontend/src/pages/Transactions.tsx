@@ -5,6 +5,7 @@ import { useAsync } from "../lib/hooks";
 import { date, money, todayISO, toCentavos } from "../lib/format";
 import { canManage, type Category, type Project, type Transaction, type TxType, type User } from "../lib/types";
 import { Empty, ErrorBanner, Select, Spinner } from "../components/ui";
+import { DatePicker } from "../components/DatePicker";
 import { Modal } from "../components/Modal";
 import { NotesPanel } from "../components/NotesPanel";
 import "./pages.css";
@@ -59,11 +60,11 @@ export function Transactions() {
         </div>
         <div className="field">
           <label>De</label>
-          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+          <DatePicker ariaLabel="Data inicial" value={from} onChange={setFrom} />
         </div>
         <div className="field">
           <label>Até</label>
-          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+          <DatePicker ariaLabel="Data final" value={to} onChange={setTo} />
         </div>
         <div className="toolbar-spacer" />
         {isAdmin && (
@@ -224,7 +225,7 @@ function NewTransactionModal({
         <div className="form-row">
           <div className="field">
             <label>Data *</label>
-            <input type="date" value={data} onChange={(e) => setData(e.target.value)} required />
+            <DatePicker ariaLabel="Data da transação" value={data} onChange={setData} required />
           </div>
           {tipo === "ganho" ? (
             <div className="field">

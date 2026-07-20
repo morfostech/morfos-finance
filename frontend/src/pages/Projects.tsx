@@ -6,6 +6,7 @@ import { useAsync } from "../lib/hooks";
 import { money, toCentavos } from "../lib/format";
 import { canManage, type Project } from "../lib/types";
 import { Empty, ErrorBanner, SectionHead, Spinner } from "../components/ui";
+import { DatePicker } from "../components/DatePicker";
 import { Modal } from "../components/Modal";
 import { StatusPill } from "../components/pills";
 import "./pages.css";
@@ -138,7 +139,7 @@ function NewProjectModal({ onClose, onCreated }: { onClose: () => void; onCreate
           </div>
           <div className="field">
             <label>Início</label>
-            <input type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} />
+            <DatePicker ariaLabel="Data de início do projeto" value={inicio} onChange={setInicio} />
           </div>
         </div>
         <p className="muted" style={{ fontSize: 12.5 }}>

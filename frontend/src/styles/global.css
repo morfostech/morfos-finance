@@ -132,10 +132,6 @@ input, button, select, textarea {
   box-shadow: 0 0 0 3px rgba(22, 176, 160, 0.12);
   background: #0d1419;
 }
-.field input[type="date"] {
-  color-scheme: dark;
-}
-
 .select {
   position: relative;
   width: 100%;

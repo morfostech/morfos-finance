@@ -1,0 +1,220 @@
+.date-picker {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.date-picker-trigger {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 13px;
+  color: var(--bone);
+  background: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: var(--r-btn);
+  cursor: pointer;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.date-picker-trigger:hover {
+  border-color: rgba(255, 255, 255, 0.22);
+  background: #0d1419;
+}
+
+.date-picker.is-open .date-picker-trigger,
+.date-picker-trigger:focus-visible {
+  outline: none;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(22, 176, 160, 0.12);
+  background: #0d1419;
+}
+
+.date-picker-placeholder {
+  color: var(--mist);
+}
+
+.calendar-icon {
+  position: relative;
+  width: 17px;
+  height: 16px;
+  flex: none;
+  border: 1.5px solid var(--mist);
+  border-radius: 3px;
+}
+
+.calendar-icon::before {
+  content: "";
+  position: absolute;
+  left: -1.5px;
+  right: -1.5px;
+  top: 3px;
+  border-top: 1.5px solid var(--mist);
+}
+
+.calendar-icon::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: 3px;
+  width: 7px;
+  height: 4px;
+  border-left: 1.5px solid var(--mist);
+  border-right: 1.5px solid var(--mist);
+}
+
+.date-picker.is-open .calendar-icon,
+.date-picker.is-open .calendar-icon::before,
+.date-picker.is-open .calendar-icon::after {
+  border-color: var(--teal);
+}
+
+.date-picker-popover {
+  position: fixed;
+  z-index: 220;
+  width: 326px;
+  max-width: calc(100vw - 28px);
+  padding: 14px;
+  color: var(--bone);
+  background: #11191f;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: var(--r-btn);
+  box-shadow: 0 20px 48px -14px rgba(0, 0, 0, 0.88), 0 0 0 1px rgba(22, 176, 160, 0.08);
+  animation: select-in 0.14s ease-out;
+}
+
+.date-picker-popover .rdp-root {
+  --rdp-accent-color: var(--teal);
+  --rdp-accent-background-color: rgba(22, 176, 160, 0.14);
+  --rdp-day-height: 38px;
+  --rdp-day-width: 40px;
+  --rdp-day_button-height: 34px;
+  --rdp-day_button-width: 34px;
+  --rdp-day_button-border-radius: 5px;
+  --rdp-selected-border: 0;
+  --rdp-today-color: var(--copper);
+  --rdp-outside-opacity: 0.32;
+  margin: 0;
+}
+
+.date-picker-popover .rdp-months,
+.date-picker-popover .rdp-month,
+.date-picker-popover .rdp-month_grid {
+  width: 100%;
+  max-width: none;
+}
+
+.date-picker-popover .rdp-month_caption {
+  height: 40px;
+  align-items: center;
+  font-family: var(--display);
+  font-size: 15px;
+  text-transform: capitalize;
+}
+
+.date-picker-popover .rdp-nav {
+  height: 40px;
+  gap: 3px;
+}
+
+.date-picker-popover .rdp-button_previous,
+.date-picker-popover .rdp-button_next {
+  width: 34px;
+  height: 34px;
+  border-radius: 5px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.date-picker-popover .rdp-button_previous:hover,
+.date-picker-popover .rdp-button_next:hover {
+  background: rgba(22, 176, 160, 0.11);
+}
+
+.date-picker-popover .rdp-chevron {
+  width: 15px;
+  fill: var(--mist);
+}
+
+.date-picker-popover .rdp-weekday {
+  padding: 7px 0 5px;
+  border: 0;
+  color: var(--mist);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.date-picker-popover .rdp-day {
+  width: var(--rdp-day-width);
+  height: var(--rdp-day-height);
+  padding: 0;
+  border: 0;
+}
+
+.date-picker-popover .rdp-week:hover {
+  background: transparent;
+}
+
+.date-picker-popover .rdp-day_button {
+  border: 0;
+  color: var(--bone);
+  font-size: 13px;
+  transition: color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+
+.date-picker-popover .rdp-day_button:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.date-picker-popover .rdp-selected .rdp-day_button {
+  color: #06231f;
+  background: var(--teal);
+  box-shadow: 0 6px 16px -8px rgba(22, 176, 160, 0.8);
+  font-weight: 700;
+}
+
+.date-picker-popover .rdp-today:not(.rdp-selected) .rdp-day_button {
+  color: var(--copper);
+  box-shadow: inset 0 0 0 1px rgba(208, 139, 87, 0.55);
+  font-weight: 700;
+}
+
+.date-picker-actions {
+  min-height: 32px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+  margin-top: 8px;
+  padding-top: 9px;
+  border-top: 1px solid var(--line);
+}
+
+.date-picker-actions button {
+  padding: 6px 9px;
+  color: var(--teal);
+  background: transparent;
+  border: 0;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.date-picker-actions button:hover {
+  background: rgba(22, 176, 160, 0.11);
+}
+
+@media (max-width: 380px) {
+  .date-picker-popover {
+    padding: 10px;
+  }
+  .date-picker-popover .rdp-root {
+    --rdp-day-width: calc((100vw - 50px) / 7);
+  }
+}
