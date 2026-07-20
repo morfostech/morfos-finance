@@ -23,7 +23,7 @@ h1, h2, h3, h4 {
   font-family: var(--display);
   font-weight: 600;
   line-height: 1.05;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 input, button, select, textarea {
   font-family: inherit;

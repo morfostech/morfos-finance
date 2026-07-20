@@ -148,3 +148,27 @@ tr.clickable {
 .member-opt input {
   accent-color: var(--teal);
 }
+
+@media (max-width: 640px) {
+  .panel {
+    padding: 18px;
+  }
+  .inst-row,
+  .meta-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .inst-right {
+    width: 100%;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .filters .field {
+    flex: 1 1 145px;
+    min-width: 0;
+  }
+  .list-file {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+}

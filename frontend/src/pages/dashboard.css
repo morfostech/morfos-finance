@@ -183,3 +183,35 @@
 }
 .sw-track { background: var(--graphite); }
 .sw-fill { background: var(--grad); }
+
+@media (min-width: 1800px) {
+  .dash {
+    gap: 20px;
+  }
+  .grid {
+    gap: 20px;
+  }
+  .panel {
+    padding: 28px;
+  }
+}
+
+@media (max-width: 700px) {
+  .panel {
+    padding: 18px;
+  }
+  .split-row {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .rec-item {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .rec-item .pill {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+  .timeline {
+    gap: 5px;
+  }
+}

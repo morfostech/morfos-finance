@@ -123,10 +123,31 @@
 .grid-4 { grid-template-columns: repeat(4, 1fr); }
 .grid-3 { grid-template-columns: repeat(3, 1fr); }
 .grid-2 { grid-template-columns: repeat(2, 1fr); }
-@media (max-width: 1000px) {
+@media (max-width: 1279px) {
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 1000px) {
   .grid-3 { grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 640px) {
+@media (max-width: 700px) {
   .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .section-head {
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .section-head h2 {
+    font-size: 19px;
+  }
+  .kpi {
+    padding: 18px;
+  }
+  .kpi-value {
+    font-size: 27px;
+  }
+  .empty {
+    padding: 28px 18px;
+  }
 }
