@@ -169,6 +169,8 @@ tiver recebido recorrência nele. Parâmetros: `ano`, `mes` (default = mês atua
 ## API — módulo Anexos
 
 Uploads são `multipart/form-data` com o campo **`file`** e `descricao` opcional.
+O nome original sanitizado é persistido em `nome_arquivo` e retornado pela API;
+a chave interna do objeto permanece única para evitar colisões entre uploads.
 
 | Método | Rota                                                    | Auth        | Descrição                                  |
 |--------|---------------------------------------------------------|-------------|--------------------------------------------|

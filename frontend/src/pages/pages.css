@@ -102,6 +102,8 @@ tr.clickable {
 }
 .list-file a {
   color: var(--teal);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 .file-ext {
   font-family: var(--mono);

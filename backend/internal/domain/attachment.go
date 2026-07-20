@@ -17,13 +17,14 @@ func (o AttachmentOwner) Valid() bool {
 // Attachment is a payment receipt (comprovante) attached to a transaction or an
 // installment.
 type Attachment struct {
-	ID        int64           `json:"id"`
-	OwnerType AttachmentOwner `json:"owner_type"`
-	OwnerID   int64           `json:"owner_id"`
-	URL       string          `json:"url"`
-	Descricao *string         `json:"descricao,omitempty"`
-	CreatedBy *int64          `json:"created_by,omitempty"`
-	CreatedAt time.Time       `json:"created_at"`
+	ID          int64           `json:"id"`
+	OwnerType   AttachmentOwner `json:"owner_type"`
+	OwnerID     int64           `json:"owner_id"`
+	URL         string          `json:"url"`
+	NomeArquivo *string         `json:"nome_arquivo,omitempty"`
+	Descricao   *string         `json:"descricao,omitempty"`
+	CreatedBy   *int64          `json:"created_by,omitempty"`
+	CreatedAt   time.Time       `json:"created_at"`
 }
 
 // ProposalType is the file format of a commercial proposal.
@@ -45,6 +46,7 @@ type Proposal struct {
 	ProjectID   int64        `json:"project_id"`
 	URL         string       `json:"url"`
 	ArquivoTipo ProposalType `json:"arquivo_tipo"`
+	NomeArquivo *string      `json:"nome_arquivo,omitempty"`
 	Descricao   *string      `json:"descricao,omitempty"`
 	CreatedBy   *int64       `json:"created_by,omitempty"`
 	CreatedAt   time.Time    `json:"created_at"`

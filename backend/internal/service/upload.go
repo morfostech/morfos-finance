@@ -7,9 +7,31 @@ import (
 	"io"
 	"path"
 	"strings"
+	"unicode"
 
 	"github.com/morfostech/morfos-finance/internal/domain"
 )
+
+// normalizeUploadFilename keeps the user-facing basename while removing path
+// components and control characters supplied by multipart clients.
+func normalizeUploadFilename(filename string) (string, error) {
+	filename = strings.ReplaceAll(filename, "\\", "/")
+	filename = strings.TrimSpace(path.Base(filename))
+	filename = strings.Map(func(r rune) rune {
+		if unicode.IsControl(r) {
+			return -1
+		}
+		return r
+	}, filename)
+	filename = strings.TrimSpace(filename)
+	if filename == "" || filename == "." {
+		return "", fmt.Errorf("%w: nome do arquivo é obrigatório", domain.ErrValidation)
+	}
+	if len([]byte(filename)) > 255 {
+		return "", fmt.Errorf("%w: nome do arquivo excede 255 bytes", domain.ErrValidation)
+	}
+	return filename, nil
+}
 
 // Upload is an incoming file to be stored.
 type Upload struct {

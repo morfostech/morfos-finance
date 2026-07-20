@@ -82,6 +82,29 @@ func TestObjectKeyUniqueAndScoped(t *testing.T) {
 	}
 }
 
+func TestNormalizeUploadFilename(t *testing.T) {
+	tests := []struct {
+		input   string
+		want    string
+		wantErr error
+	}{
+		{"Proposta Comercial 2026.pdf", "Proposta Comercial 2026.pdf", nil},
+		{"C:\\fakepath\\Contrato Final.DOCX", "Contrato Final.DOCX", nil},
+		{"../../recibo julho.pdf", "recibo julho.pdf", nil},
+		{"relatorio\nfinal.pdf", "relatoriofinal.pdf", nil},
+		{"   ", "", domain.ErrValidation},
+	}
+	for _, tc := range tests {
+		got, err := normalizeUploadFilename(tc.input)
+		if !errors.Is(err, tc.wantErr) {
+			t.Fatalf("normalizeUploadFilename(%q) err = %v, want %v", tc.input, err, tc.wantErr)
+		}
+		if got != tc.want {
+			t.Errorf("normalizeUploadFilename(%q) = %q, want %q", tc.input, got, tc.want)
+		}
+	}
+}
+
 func TestKeyFromURL(t *testing.T) {
 	tests := []struct {
 		url  string

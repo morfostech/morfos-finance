@@ -127,6 +127,7 @@ export interface Attachment {
   owner_type: "transaction" | "installment";
   owner_id: number;
   url: string;
+  nome_arquivo?: string;
   descricao?: string;
 }
 
@@ -135,6 +136,7 @@ export interface Proposal {
   project_id: number;
   url: string;
   arquivo_tipo: "pdf" | "docx";
+  nome_arquivo?: string;
   descricao?: string;
 }
 
