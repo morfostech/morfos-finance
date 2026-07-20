@@ -34,6 +34,22 @@ type RecurrenceSummary struct {
 	Projetos []ProjectRecurrence `json:"projetos"`
 }
 
+// RecurrenceForecastMonth is the expected recurring revenue for one future
+// month, based only on project fees and active periods.
+type RecurrenceForecastMonth struct {
+	Ano      int   `json:"ano"`
+	Mes      int   `json:"mes"`
+	Previsto Money `json:"previsto"`
+}
+
+// RecurrenceForecast projects recurring revenue over a bounded future window.
+// It does not create receivables or count future transactions as received.
+type RecurrenceForecast struct {
+	HorizonteMeses int                       `json:"horizonte_meses"`
+	Total          Money                     `json:"total"`
+	Meses          []RecurrenceForecastMonth `json:"meses"`
+}
+
 // MonthBounds returns the first and last calendar day of the month (UTC),
 // matching how Postgres DATE values are scanned.
 func MonthBounds(ano int, mes time.Month) (start, end time.Time) {
@@ -92,4 +108,29 @@ func BuildSummary(ano int, mes time.Month, rows []RecurrenceRow) *RecurrenceSumm
 		sum.Pendente += pr.Pendente
 	}
 	return sum
+}
+
+// BuildForecast calculates expected recurring revenue from startMonth forward.
+func BuildForecast(startMonth time.Time, months int, rows []RecurrenceRow) *RecurrenceForecast {
+	forecast := &RecurrenceForecast{
+		HorizonteMeses: months,
+		Meses:          make([]RecurrenceForecastMonth, 0, months),
+	}
+	for offset := 0; offset < months; offset++ {
+		month := startMonth.AddDate(0, offset, 0)
+		start, end := MonthBounds(month.Year(), month.Month())
+		projected := Money(0)
+		for _, row := range rows {
+			if activeInMonth(row.DataInicio, row.DataFim, start, end) {
+				projected += row.ValorMensal
+			}
+		}
+		forecast.Meses = append(forecast.Meses, RecurrenceForecastMonth{
+			Ano:      month.Year(),
+			Mes:      int(month.Month()),
+			Previsto: projected,
+		})
+		forecast.Total += projected
+	}
+	return forecast
 }

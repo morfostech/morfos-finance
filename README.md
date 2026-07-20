@@ -205,7 +205,8 @@ escolhe o intervalo.
 **`company`** traz: `saldo_em_caixa` (acumulado de todos os tempos, entrou −
 saiu), `ganhos`/`despesas`/`resultado` do período, `ganhos_por_origem`,
 `despesas_por_categoria`, `implementacao` (total × recebido × a_receber das
-parcelas), `parcelas_pendentes`, `recorrencia_mes` (resumo do mês de `to`), e os
+parcelas), `parcelas_pendentes`, `recorrencia_mes` (resumo do mês de `to`),
+`recorrencia_futura` (previsão dos 12 meses seguintes), e os
 recortes `por_projeto` e `por_colaborador`.
 
 **`me`** traz `ganhos`/`despesas`/`saldo` do colaborador no período e seus
