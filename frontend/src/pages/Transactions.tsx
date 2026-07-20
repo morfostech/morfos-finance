@@ -100,7 +100,9 @@ export function Transactions() {
                   <td style={{ textAlign: "right" }}>
                     <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                       <button className="btn btn-ghost btn-sm" onClick={() => setNotesFor(t.id)}>Notas</button>
-                      {isAdmin && (
+                      {t.installment_id ? (
+                        <span className="pill pill-ok" title="Gerenciada pelo pagamento da parcela no projeto">Automática</span>
+                      ) : isAdmin && (
                         <button
                           className="btn btn-danger btn-sm"
                           onClick={async () => {
@@ -176,7 +178,12 @@ function NewTransactionModal({
     if (projectId) body.project_id = Number(projectId);
     if (userId) body.user_id = Number(userId);
     if (descricao) body.descricao = descricao;
-    if (tipo === "ganho") body.origem = origem;
+    if (tipo === "ganho") {
+      if (origem === "recorrencia" && !projectId) {
+        return setError("Selecione o projeto para ganhos de recorrência.");
+      }
+      body.origem = origem;
+    }
     else if (categoryId) body.category_id = Number(categoryId);
 
     setBusy(true);
@@ -217,7 +224,6 @@ function NewTransactionModal({
               <label>Origem</label>
               <select value={origem} onChange={(e) => setOrigem(e.target.value)}>
                 <option value="avulso">Avulso</option>
-                <option value="implementacao">Implementação</option>
                 <option value="recorrencia">Recorrência</option>
               </select>
             </div>
@@ -235,7 +241,7 @@ function NewTransactionModal({
         </div>
         <div className="form-row">
           <div className="field">
-            <label>Projeto</label>
+            <label>Projeto{tipo === "ganho" && origem === "recorrencia" ? " *" : ""}</label>
             <select value={projectId} onChange={(e) => setProjectId(e.target.value)}>
               <option value="">—</option>
               {projects.map((p) => (

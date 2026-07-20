@@ -208,18 +208,54 @@ func (r *ProjectRepository) IsMember(ctx context.Context, projectID, userID int6
 
 // SetInstallment writes the full desired state of one installment: its value
 // and its paid date (nil pagoEm = pending).
-func (r *ProjectRepository) SetInstallment(ctx context.Context, projectID, installmentID int64, valor domain.Money, pagoEm *domain.Date) (*domain.Installment, error) {
-	row := r.pool.QueryRow(ctx, `
-		UPDATE project_installments
-		SET valor = $3::numeric, pago_em = $4
-		WHERE id = $1 AND project_id = $2
-		RETURNING id, project_id, tipo, valor::text, pago_em, created_at, updated_at`,
-		installmentID, projectID, valor.Numeric(), dateArg(pagoEm))
-	inst, err := scanInstallment(row)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, domain.ErrNotFound
+func (r *ProjectRepository) SetInstallment(ctx context.Context, projectID, installmentID int64, valor domain.Money, pagoEm *domain.Date, actorID int64) (*domain.Installment, error) {
+	var inst *domain.Installment
+	err := pgx.BeginFunc(ctx, r.pool, func(tx pgx.Tx) error {
+		row := tx.QueryRow(ctx, `
+			UPDATE project_installments
+			SET valor = $3::numeric, pago_em = $4
+			WHERE id = $1 AND project_id = $2
+			RETURNING id, project_id, tipo, valor::text, pago_em, created_at, updated_at`,
+			installmentID, projectID, valor.Numeric(), dateArg(pagoEm))
+		var err error
+		inst, err = scanInstallment(row)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.ErrNotFound
+		}
+		if err != nil {
+			return err
+		}
+
+		if pagoEm == nil {
+			_, err = tx.Exec(ctx, `
+				UPDATE transactions
+				SET deleted_at = now()
+				WHERE installment_id = $1 AND deleted_at IS NULL`, installmentID)
+			return err
+		}
+
+		description := "Parcela de implementação (entrada)"
+		if inst.Tipo == domain.InstallmentFinalizacao {
+			description = "Parcela de implementação (finalização)"
+		}
+		_, err = tx.Exec(ctx, `
+			INSERT INTO transactions (
+				tipo, valor, data, project_id, origem, descricao, created_by, installment_id
+			)
+			VALUES ('ganho', $1::numeric, $2, $3, 'implementacao', $4, $5, $6)
+			ON CONFLICT (installment_id) WHERE installment_id IS NOT NULL
+			DO UPDATE SET
+				tipo = 'ganho', valor = EXCLUDED.valor, data = EXCLUDED.data,
+				project_id = EXCLUDED.project_id, user_id = NULL,
+				origem = 'implementacao', category_id = NULL,
+				descricao = EXCLUDED.descricao, deleted_at = NULL`,
+			valor.Numeric(), pagoEm.Time, projectID, description, actorID, installmentID)
+		return err
+	})
+	if err != nil {
+		return nil, err
 	}
-	return inst, err
+	return inst, nil
 }
 
 // GetInstallment returns a single installment scoped to its project.

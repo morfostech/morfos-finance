@@ -23,7 +23,7 @@ func NewTransactionRepository(pool *pgxpool.Pool) *TransactionRepository {
 }
 
 const txColumns = `id, tipo, valor::text, data, project_id, user_id, origem,
-	category_id, descricao, created_by, created_at, updated_at`
+	category_id, descricao, installment_id, created_by, created_at, updated_at`
 
 func scanTransaction(row pgx.Row) (*domain.Transaction, error) {
 	var (
@@ -32,7 +32,7 @@ func scanTransaction(row pgx.Row) (*domain.Transaction, error) {
 		data  time.Time
 	)
 	err := row.Scan(&t.ID, &t.Tipo, &valor, &data, &t.ProjectID, &t.UserID,
-		&t.Origem, &t.CategoryID, &t.Descricao, &t.CreatedBy, &t.CreatedAt, &t.UpdatedAt)
+		&t.Origem, &t.CategoryID, &t.Descricao, &t.InstallmentID, &t.CreatedBy, &t.CreatedAt, &t.UpdatedAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, domain.ErrNotFound
 	}

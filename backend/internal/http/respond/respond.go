@@ -50,6 +50,8 @@ func DomainError(w http.ResponseWriter, err error) {
 		Error(w, http.StatusConflict, err.Error())
 	case errors.Is(err, domain.ErrConflict):
 		Error(w, http.StatusConflict, err.Error())
+	case errors.Is(err, domain.ErrManagedTransaction):
+		Error(w, http.StatusConflict, err.Error())
 	case errors.Is(err, domain.ErrWrongPassword):
 		Error(w, http.StatusBadRequest, err.Error())
 	case errors.Is(err, domain.ErrValidation):

@@ -59,7 +59,7 @@ func TestBuildTransactionValidation(t *testing.T) {
 		in      TransactionInput
 		wantErr error
 	}{
-		{"ganho válido com origem", TransactionInput{Tipo: domain.TxGanho, Valor: 1000, Data: txDate(), Origem: origemPtr(domain.OrigemRecorrencia)}, nil},
+		{"ganho válido com origem", TransactionInput{Tipo: domain.TxGanho, Valor: 1000, Data: txDate(), Origem: origemPtr(domain.OrigemRecorrencia), ProjectID: i64(1)}, nil},
 		{"despesa válida com categoria", TransactionInput{Tipo: domain.TxDespesa, Valor: 1000, Data: txDate(), CategoryID: i64(3)}, nil},
 		{"tipo inválido", TransactionInput{Tipo: domain.TxType("x"), Valor: 1000, Data: txDate()}, domain.ErrValidation},
 		{"valor zero", TransactionInput{Tipo: domain.TxGanho, Valor: 0, Data: txDate()}, domain.ErrValidation},
@@ -68,6 +68,8 @@ func TestBuildTransactionValidation(t *testing.T) {
 		{"ganho com categoria", TransactionInput{Tipo: domain.TxGanho, Valor: 1000, Data: txDate(), CategoryID: i64(3)}, domain.ErrValidation},
 		{"despesa com origem", TransactionInput{Tipo: domain.TxDespesa, Valor: 1000, Data: txDate(), Origem: origemPtr(domain.OrigemAvulso)}, domain.ErrValidation},
 		{"origem inválida", TransactionInput{Tipo: domain.TxGanho, Valor: 1000, Data: txDate(), Origem: origemPtr(domain.TxOrigem("x"))}, domain.ErrValidation},
+		{"recorrência sem projeto", TransactionInput{Tipo: domain.TxGanho, Valor: 1000, Data: txDate(), Origem: origemPtr(domain.OrigemRecorrencia)}, domain.ErrValidation},
+		{"implementação manual", TransactionInput{Tipo: domain.TxGanho, Valor: 1000, Data: txDate(), Origem: origemPtr(domain.OrigemImplementacao), ProjectID: i64(1)}, domain.ErrValidation},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -77,6 +79,21 @@ func TestBuildTransactionValidation(t *testing.T) {
 				t.Fatalf("err = %v, want %v", err, tc.wantErr)
 			}
 		})
+	}
+}
+
+func TestManagedTransactionCannotBeChangedDirectly(t *testing.T) {
+	repo := newFakeTxRepo()
+	installmentID := int64(9)
+	repo.store[1] = &domain.Transaction{ID: 1, InstallmentID: &installmentID}
+	svc := NewTransactionService(repo)
+
+	_, err := svc.Update(context.Background(), 1, TransactionInput{Tipo: domain.TxGanho, Valor: 1000, Data: txDate()})
+	if !errors.Is(err, domain.ErrManagedTransaction) {
+		t.Fatalf("update err = %v, want ErrManagedTransaction", err)
+	}
+	if err := svc.Delete(context.Background(), 1); !errors.Is(err, domain.ErrManagedTransaction) {
+		t.Fatalf("delete err = %v, want ErrManagedTransaction", err)
 	}
 }
 

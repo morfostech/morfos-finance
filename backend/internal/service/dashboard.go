@@ -94,7 +94,7 @@ func (s *DashboardService) Me(ctx context.Context, viewer Viewer, from, to domai
 	if err != nil {
 		return nil, err
 	}
-	projetos, err := s.projects.List(ctx, viewer)
+	projetos, err := s.projects.ListPersonal(ctx, viewer.UserID)
 	if err != nil {
 		return nil, err
 	}
