@@ -7,43 +7,58 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/minio/minio-go/v7"
-	"github.com/minio/minio-go/v7/pkg/credentials"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/credentials"
+	awss3 "github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/morfostech/morfos-finance/internal/config"
 )
 
-// s3Storage stores objects in an S3-compatible bucket (Cloudflare R2 by
-// default). Uses path-style addressing for maximum compatibility.
+// s3Storage stores objects in an S3-compatible bucket. The AWS client supports
+// endpoint path prefixes such as Supabase's required /storage/v1/s3.
 type s3Storage struct {
-	client        *minio.Client
+	client        *awss3.Client
+	endpoint      string
 	bucket        string
 	publicBaseURL string
 }
 
 func newS3(cfg config.StorageConfig) (*s3Storage, error) {
-	endpoint, secure, err := splitEndpoint(cfg.Endpoint)
+	endpoint, err := normalizeEndpoint(cfg.Endpoint)
 	if err != nil {
 		return nil, err
 	}
-	client, err := minio.New(endpoint, &minio.Options{
-		Creds:  credentials.NewStaticV4(cfg.AccessKey, cfg.SecretKey, ""),
-		Secure: secure,
-		Region: cfg.Region,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("init s3 client: %w", err)
+
+	awsCfg := aws.Config{
+		Region:                     cfg.Region,
+		RequestChecksumCalculation: aws.RequestChecksumCalculationWhenRequired,
+		ResponseChecksumValidation: aws.ResponseChecksumValidationWhenRequired,
+		Credentials: aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(
+			cfg.AccessKey,
+			cfg.SecretKey,
+			"",
+		)),
 	}
+	client := awss3.NewFromConfig(awsCfg, func(options *awss3.Options) {
+		options.BaseEndpoint = aws.String(endpoint)
+		options.UsePathStyle = true
+	})
+
 	return &s3Storage{
 		client:        client,
+		endpoint:      endpoint,
 		bucket:        cfg.Bucket,
 		publicBaseURL: strings.TrimRight(cfg.PublicBaseURL, "/"),
 	}, nil
 }
 
 func (s *s3Storage) Put(ctx context.Context, key, contentType string, data io.Reader, size int64) (string, error) {
-	_, err := s.client.PutObject(ctx, s.bucket, key, data, size, minio.PutObjectOptions{
-		ContentType: contentType,
+	_, err := s.client.PutObject(ctx, &awss3.PutObjectInput{
+		Bucket:        aws.String(s.bucket),
+		Key:           aws.String(key),
+		Body:          data,
+		ContentLength: aws.Int64(size),
+		ContentType:   aws.String(contentType),
 	})
 	if err != nil {
 		return "", fmt.Errorf("put object: %w", err)
@@ -51,25 +66,28 @@ func (s *s3Storage) Put(ctx context.Context, key, contentType string, data io.Re
 	if s.publicBaseURL != "" {
 		return s.publicBaseURL + "/" + key, nil
 	}
-	return fmt.Sprintf("%s/%s/%s", strings.TrimRight(s.client.EndpointURL().String(), "/"), s.bucket, key), nil
+	return fmt.Sprintf("%s/%s/%s", s.endpoint, s.bucket, key), nil
 }
 
 func (s *s3Storage) Delete(ctx context.Context, key string) error {
-	if err := s.client.RemoveObject(ctx, s.bucket, key, minio.RemoveObjectOptions{}); err != nil {
+	_, err := s.client.DeleteObject(ctx, &awss3.DeleteObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(key),
+	})
+	if err != nil {
 		return fmt.Errorf("delete object: %w", err)
 	}
 	return nil
 }
 
-// splitEndpoint turns a URL like "https://acc.r2.cloudflarestorage.com" into the
-// host:port and TLS flag minio expects.
-func splitEndpoint(raw string) (host string, secure bool, err error) {
-	if !strings.Contains(raw, "://") {
-		return raw, true, nil // bare host, assume TLS
+func normalizeEndpoint(raw string) (string, error) {
+	endpoint := strings.TrimRight(strings.TrimSpace(raw), "/")
+	if !strings.Contains(endpoint, "://") {
+		endpoint = "https://" + endpoint
 	}
-	u, err := url.Parse(raw)
-	if err != nil {
-		return "", false, fmt.Errorf("parse s3 endpoint: %w", err)
+	u, err := url.Parse(endpoint)
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		return "", fmt.Errorf("parse s3 endpoint: %q", raw)
 	}
-	return u.Host, u.Scheme == "https", nil
+	return endpoint, nil
 }
