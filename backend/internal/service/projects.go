@@ -18,7 +18,7 @@ type ProjectRepo interface {
 	ReplaceMembers(ctx context.Context, projectID int64, userIDs []int64) error
 	IsMember(ctx context.Context, projectID, userID int64) (bool, error)
 	GetInstallment(ctx context.Context, projectID, installmentID int64) (*domain.Installment, error)
-	SetInstallment(ctx context.Context, projectID, installmentID int64, valor domain.Money, pagoEm *domain.Date) (*domain.Installment, error)
+	SetInstallment(ctx context.Context, projectID, installmentID int64, valor domain.Money, pagoEm *domain.Date, actorID int64) (*domain.Installment, error)
 }
 
 type ProjectService struct {
@@ -99,17 +99,23 @@ func (s *ProjectService) List(ctx context.Context, viewer Viewer) ([]domain.Proj
 	return s.projects.List(ctx, filter)
 }
 
+// ListPersonal always scopes projects to the authenticated user's allocations,
+// regardless of whether they can manage the company-wide project list.
+func (s *ProjectService) ListPersonal(ctx context.Context, userID int64) ([]domain.Project, error) {
+	return s.projects.List(ctx, &userID)
+}
+
 func (s *ProjectService) SetMembers(ctx context.Context, projectID int64, userIDs []int64) error {
 	return s.projects.ReplaceMembers(ctx, projectID, dedupe(userIDs))
 }
 
 // MarkInstallment sets an installment paid (with a date) or pending (nil date).
-func (s *ProjectService) MarkInstallment(ctx context.Context, projectID, installmentID int64, pagoEm *domain.Date) (*domain.Installment, error) {
+func (s *ProjectService) MarkInstallment(ctx context.Context, projectID, installmentID int64, pagoEm *domain.Date, actorID int64) (*domain.Installment, error) {
 	inst, err := s.projects.GetInstallment(ctx, projectID, installmentID)
 	if err != nil {
 		return nil, err
 	}
-	return s.projects.SetInstallment(ctx, projectID, installmentID, inst.Valor, pagoEm)
+	return s.projects.SetInstallment(ctx, projectID, installmentID, inst.Valor, pagoEm, actorID)
 }
 
 // Viewer is the authenticated principal's identity for authorization decisions.

@@ -61,6 +61,7 @@ export interface Transaction {
   origem?: TxOrigem;
   category_id?: number;
   descricao?: string;
+  installment_id?: number;
   created_by: number;
 }
 

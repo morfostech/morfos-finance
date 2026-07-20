@@ -62,7 +62,8 @@ func TestPlanInstallments(t *testing.T) {
 
 // fakeProjectRepo is an in-memory ProjectRepo capturing what Create receives.
 type fakeProjectRepo struct {
-	created *domain.Project
+	created      *domain.Project
+	listMemberID *int64
 }
 
 func (f *fakeProjectRepo) Create(_ context.Context, p *domain.Project) (*domain.Project, error) {
@@ -76,7 +77,8 @@ func (f *fakeProjectRepo) Update(_ context.Context, p *domain.Project, _ reposit
 func (f *fakeProjectRepo) GetByID(_ context.Context, _ int64) (*domain.Project, error) {
 	return f.created, nil
 }
-func (f *fakeProjectRepo) List(_ context.Context, _ *int64) ([]domain.Project, error) {
+func (f *fakeProjectRepo) List(_ context.Context, memberID *int64) ([]domain.Project, error) {
+	f.listMemberID = memberID
 	return nil, nil
 }
 func (f *fakeProjectRepo) ReplaceMembers(_ context.Context, _ int64, _ []int64) error { return nil }
@@ -84,8 +86,19 @@ func (f *fakeProjectRepo) IsMember(_ context.Context, _, _ int64) (bool, error) 
 func (f *fakeProjectRepo) GetInstallment(_ context.Context, _, _ int64) (*domain.Installment, error) {
 	return nil, nil
 }
-func (f *fakeProjectRepo) SetInstallment(_ context.Context, _, _ int64, _ domain.Money, _ *domain.Date) (*domain.Installment, error) {
+func (f *fakeProjectRepo) SetInstallment(_ context.Context, _, _ int64, _ domain.Money, _ *domain.Date, _ int64) (*domain.Installment, error) {
 	return nil, nil
+}
+
+func TestListPersonalAlwaysScopesToUser(t *testing.T) {
+	repo := &fakeProjectRepo{}
+	svc := NewProjectService(repo)
+	if _, err := svc.ListPersonal(context.Background(), 42); err != nil {
+		t.Fatal(err)
+	}
+	if repo.listMemberID == nil || *repo.listMemberID != 42 {
+		t.Fatalf("member filter = %v, want 42", repo.listMemberID)
+	}
 }
 
 func TestCreateProjectValidation(t *testing.T) {

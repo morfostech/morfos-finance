@@ -21,7 +21,11 @@ export function Dashboard() {
       <header className="page-head">
         <span className="kicker">01 / Visão geral</span>
         <h1>{showCompany ? "Painel da empresa" : "Meu painel"}</h1>
-        <p>Resultados no período selecionado. Saldo em caixa é acumulado de todos os tempos.</p>
+        <p>
+          {showCompany
+            ? "Resultados no período selecionado. Saldo e parcelas de implementação são acumulados."
+            : "Seus ganhos e despesas no período, com apenas os projetos em que você está alocado."}
+        </p>
       </header>
 
       {hasCompanyView && (
@@ -83,7 +87,7 @@ function CompanyView({ from, to }: { from: string; to: string }) {
 
       <div className="grid grid-2 dash-block">
         <div className="card panel">
-          <SectionHead idx="02" title="A receber × recebido" />
+          <SectionHead idx="02" title="Implementação acumulada × recorrência mensal" />
           <div className="split-row">
             <div>
               <div className="split-k mono">Implementação</div>
@@ -101,7 +105,7 @@ function CompanyView({ from, to }: { from: string; to: string }) {
             </div>
           </div>
           <div className="parcelas-note mono muted">
-            {data.parcelas_pendentes.quantidade} parcela(s) pendente(s) · {money(data.parcelas_pendentes.total)}
+            acumulado · {data.parcelas_pendentes.quantidade} parcela(s) pendente(s) · {money(data.parcelas_pendentes.total)}
           </div>
         </div>
 

@@ -50,8 +50,12 @@ func (s *TransactionService) Create(ctx context.Context, in TransactionInput, cr
 // Update replaces the editable fields of an existing (non-deleted) transaction.
 // created_by is preserved.
 func (s *TransactionService) Update(ctx context.Context, id int64, in TransactionInput) (*domain.Transaction, error) {
-	if _, err := s.txs.GetByID(ctx, id); err != nil {
+	existing, err := s.txs.GetByID(ctx, id)
+	if err != nil {
 		return nil, err
+	}
+	if existing.InstallmentID != nil {
+		return nil, domain.ErrManagedTransaction
 	}
 	t, err := buildTransaction(in)
 	if err != nil {
@@ -62,6 +66,13 @@ func (s *TransactionService) Update(ctx context.Context, id int64, in Transactio
 }
 
 func (s *TransactionService) Delete(ctx context.Context, id int64) error {
+	existing, err := s.txs.GetByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if existing.InstallmentID != nil {
+		return domain.ErrManagedTransaction
+	}
 	return s.txs.SoftDelete(ctx, id)
 }
 
@@ -107,6 +118,12 @@ func buildTransaction(in TransactionInput) (*domain.Transaction, error) {
 		}
 		if in.Origem != nil && !in.Origem.Valid() {
 			return nil, fmt.Errorf("%w: origem inválida", domain.ErrValidation)
+		}
+		if in.Origem != nil && *in.Origem == domain.OrigemImplementacao {
+			return nil, fmt.Errorf("%w: ganhos de implementação são gerados pelo pagamento da parcela", domain.ErrValidation)
+		}
+		if in.Origem != nil && *in.Origem == domain.OrigemRecorrencia && in.ProjectID == nil {
+			return nil, fmt.Errorf("%w: projeto é obrigatório para ganhos de recorrência", domain.ErrValidation)
 		}
 	case domain.TxDespesa:
 		if in.Origem != nil {

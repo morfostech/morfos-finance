@@ -19,5 +19,6 @@ var (
 
 	// ErrConflict is a generic state conflict (e.g. deleting a resource still
 	// referenced elsewhere).
-	ErrConflict = errors.New("conflito de estado")
+	ErrConflict           = errors.New("conflito de estado")
+	ErrManagedTransaction = errors.New("transação gerenciada por parcela; altere o pagamento no projeto")
 )

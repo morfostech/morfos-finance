@@ -118,6 +118,11 @@ para baixo) e `finalizacao` (o restante) — que sempre somam o valor total.
 implementação **com uma parcela já paga** retorna `409`; sem parcela paga, as
 parcelas são regeradas. Mensalidade sozinha não gera parcelas.
 
+Marcar uma parcela como paga cria ou restaura automaticamente uma transação de
+ganho de implementação vinculada à parcela. Voltar a parcela para pendente faz
+soft delete dessa transação. Transações gerenciadas por parcelas não podem ser
+editadas ou excluídas diretamente.
+
 ## API — módulo Transações & Categorias
 
 | Método | Rota                        | Auth        | Descrição                                              |
@@ -132,8 +137,11 @@ parcelas são regeradas. Mensalidade sozinha não gera parcelas.
 | DELETE | `/api/categories/{id}`      | Admin / Sócio | Remove categoria (`409` se em uso por transações)      |
 
 **Regras de transação:** `valor` positivo (centavos) e `data` obrigatórios.
-`ganho` aceita `origem` (`implementacao`/`recorrencia`/`avulso`) e nunca categoria;
-`despesa` aceita `category_id` e nunca origem. `project_id`/`user_id` opcionais.
+Ganhos manuais aceitam `origem` (`recorrencia`/`avulso`) e nunca categoria;
+implementação é gerada exclusivamente pelo pagamento de parcelas, enquanto
+recorrência exige `project_id`;
+`despesa` aceita `category_id` e nunca origem. `user_id` é opcional; `project_id`
+continua opcional para ganhos avulsos e despesas.
 
 **Filtros do `GET /api/transactions`** (query string): `from`, `to` (`YYYY-MM-DD`),
 `tipo`, `origem`, `project_id`, `user_id`, `category_id`. Para colaborador, o

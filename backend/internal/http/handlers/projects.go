@@ -141,7 +141,8 @@ func (h *ProjectHandler) MarkInstallment(w http.ResponseWriter, r *http.Request)
 	if !decode(w, r, &req) {
 		return
 	}
-	inst, err := h.projects.MarkInstallment(r.Context(), projectID, installmentID, req.PagoEm)
+	p, _ := middleware.PrincipalFrom(r.Context())
+	inst, err := h.projects.MarkInstallment(r.Context(), projectID, installmentID, req.PagoEm, p.UserID)
 	if err != nil {
 		respond.DomainError(w, err)
 		return

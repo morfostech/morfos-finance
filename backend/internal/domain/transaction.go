@@ -33,18 +33,19 @@ func (o TxOrigem) Valid() bool {
 // Transaction is a single financial movement (ganho or despesa). Financial data
 // is never hard-deleted: DeletedAt marks a soft delete.
 type Transaction struct {
-	ID         int64     `json:"id"`
-	Tipo       TxType    `json:"tipo"`
-	Valor      Money     `json:"valor"`
-	Data       Date      `json:"data"`
-	ProjectID  *int64    `json:"project_id,omitempty"`
-	UserID     *int64    `json:"user_id,omitempty"`
-	Origem     *TxOrigem `json:"origem,omitempty"`      // ganho only
-	CategoryID *int64    `json:"category_id,omitempty"` // despesa only
-	Descricao  *string   `json:"descricao,omitempty"`
-	CreatedBy  int64     `json:"created_by"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	ID            int64     `json:"id"`
+	Tipo          TxType    `json:"tipo"`
+	Valor         Money     `json:"valor"`
+	Data          Date      `json:"data"`
+	ProjectID     *int64    `json:"project_id,omitempty"`
+	UserID        *int64    `json:"user_id,omitempty"`
+	Origem        *TxOrigem `json:"origem,omitempty"`      // ganho only
+	CategoryID    *int64    `json:"category_id,omitempty"` // despesa only
+	Descricao     *string   `json:"descricao,omitempty"`
+	InstallmentID *int64    `json:"installment_id,omitempty"`
+	CreatedBy     int64     `json:"created_by"`
+	CreatedAt     time.Time `json:"created_at"`
+	UpdatedAt     time.Time `json:"updated_at"`
 }
 
 // ExpenseCategory is an admin-managed label for despesas.
