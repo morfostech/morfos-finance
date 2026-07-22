@@ -71,6 +71,10 @@ func (s *DashboardService) Company(ctx context.Context, from, to domain.Date) (*
 	if err != nil {
 		return nil, err
 	}
+	recorrenciaPeriodo, err := s.recurrence.Period(ctx, fromT, toT, nil)
+	if err != nil {
+		return nil, err
+	}
 	forecastStart := time.Date(toT.Year(), toT.Month(), 1, 0, 0, 0, 0, time.UTC).AddDate(0, 1, 0)
 	recorrenciaFutura, err := s.recurrence.Forecast(ctx, forecastStart, 12, nil)
 	if err != nil {
@@ -88,6 +92,7 @@ func (s *DashboardService) Company(ctx context.Context, from, to domain.Date) (*
 		Implementacao:        impl,
 		ParcelasPendentes:    pend,
 		RecorrenciaMes:       recorrencia,
+		RecorrenciaPeriodo:   recorrenciaPeriodo,
 		RecorrenciaFutura:    recorrenciaFutura,
 		PorProjeto:           emptyProjectTotals(porProjeto),
 		PorColaborador:       emptyUserTotals(porColaborador),

@@ -94,6 +94,13 @@ export interface RecurrenceForecast {
   meses: { ano: number; mes: number; previsto: number }[];
 }
 
+export interface RecurrencePeriod {
+  previsto: number;
+  recebido: number;
+  pendente: number;
+  meses: { ano: number; mes: number; previsto: number; recebido: number; pendente: number }[];
+}
+
 export interface CategoryTotal {
   category_id: number | null;
   nome: string;
@@ -116,6 +123,7 @@ export interface CompanyDashboard {
   implementacao: { total: number; recebido: number; a_receber: number };
   parcelas_pendentes: { quantidade: number; total: number };
   recorrencia_mes: RecurrenceSummary;
+  recorrencia_periodo: RecurrencePeriod;
   recorrencia_futura?: RecurrenceForecast;
   por_projeto: { project_id: number; nome: string; ganhos: number; despesas: number }[];
   por_colaborador: { user_id: number; nome: string; ganhos: number; despesas: number }[];
@@ -127,6 +135,45 @@ export interface MeDashboard {
   despesas: number;
   saldo: number;
   projetos: Project[];
+}
+
+export type PlannedStatus = "aberto" | "realizado";
+
+export interface PlannedEntry {
+  id: number;
+  tipo: TxType;
+  valor: number;
+  due_date: string;
+  project_id?: number;
+  user_id?: number;
+  origem?: TxOrigem;
+  category_id?: number;
+  descricao: string;
+  actual_transaction_id?: number;
+  status: PlannedStatus;
+  overdue: boolean;
+}
+
+export interface CashFlowForecast {
+  periodo: { from: string; to: string };
+  saldo_inicial: number;
+  entradas: number;
+  saidas: number;
+  saldo_final: number;
+  vencidos: number;
+  dias: { data: string; entradas: number; saidas: number; saldo_projetado: number }[];
+}
+
+export interface ExpenseBudget {
+  id: number;
+  category_id: number;
+  category: string;
+  ano: number;
+  mes: number;
+  valor: number;
+  realizado: number;
+  restante: number;
+  percentual: number;
 }
 
 export interface Attachment {

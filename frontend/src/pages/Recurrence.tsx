@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAsync } from "../lib/hooks";
 import { money, monthLabel } from "../lib/format";
@@ -10,8 +11,11 @@ import "./dashboard.css";
 const now = new Date();
 
 export function Recurrence() {
-  const [ano, setAno] = useState(now.getFullYear());
-  const [mes, setMes] = useState(now.getMonth() + 1);
+  const [searchParams] = useSearchParams();
+  const initialYear = Number(searchParams.get("ano")) || now.getFullYear();
+  const initialMonth = Number(searchParams.get("mes")) || now.getMonth() + 1;
+  const [ano, setAno] = useState(initialYear);
+  const [mes, setMes] = useState(initialMonth >= 1 && initialMonth <= 12 ? initialMonth : now.getMonth() + 1);
 
   const month = useAsync<RecurrenceSummary>(() => api.get(`/recurrence?ano=${ano}&mes=${mes}`), [ano, mes]);
   const timeline = useAsync<RecurrenceSummary[]>(() => api.get(`/recurrence/timeline?ano=${ano}`), [ano]);

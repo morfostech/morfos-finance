@@ -34,6 +34,25 @@ type RecurrenceSummary struct {
 	Projetos []ProjectRecurrence `json:"projetos"`
 }
 
+// RecurrencePeriodMonth is the realized-versus-expected recurrence position
+// for one month inside a dashboard date range.
+type RecurrencePeriodMonth struct {
+	Ano      int   `json:"ano"`
+	Mes      int   `json:"mes"`
+	Previsto Money `json:"previsto"`
+	Recebido Money `json:"recebido"`
+	Pendente Money `json:"pendente"`
+}
+
+// RecurrencePeriod accumulates all calendar months touched by a selected
+// range. Expected revenue remains separate from received cash.
+type RecurrencePeriod struct {
+	Previsto Money                   `json:"previsto"`
+	Recebido Money                   `json:"recebido"`
+	Pendente Money                   `json:"pendente"`
+	Meses    []RecurrencePeriodMonth `json:"meses"`
+}
+
 // RecurrenceForecastMonth is the expected recurring revenue for one future
 // month, based only on project fees and active periods.
 type RecurrenceForecastMonth struct {
