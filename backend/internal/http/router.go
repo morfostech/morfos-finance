@@ -27,6 +27,7 @@ type Router struct {
 	Dashboard      *handlers.DashboardHandler
 	Notes          *handlers.NoteHandler
 	ChangeRequests *handlers.ChangeRequestHandler
+	Planning       *handlers.PlanningHandler
 	Authn          *middleware.Authenticator
 	CORSOrigins    []string
 
@@ -102,6 +103,15 @@ func (rt *Router) Build() http.Handler {
 				r.Get("/recurrence", rt.Recurrence.Month)
 				r.Get("/recurrence/timeline", rt.Recurrence.Timeline)
 				r.Get("/dashboard/company", rt.Dashboard.Company)
+				r.Get("/planning", rt.Planning.List)
+				r.Post("/planning", rt.Planning.Create)
+				r.Put("/planning/{id}", rt.Planning.Update)
+				r.Delete("/planning/{id}", rt.Planning.Delete)
+				r.Post("/planning/{id}/complete", rt.Planning.Complete)
+				r.Get("/planning/cash-flow", rt.Planning.Forecast)
+				r.Get("/budgets", rt.Planning.ListBudgets)
+				r.Put("/budgets", rt.Planning.UpsertBudget)
+				r.Delete("/budgets/{id}", rt.Planning.DeleteBudget)
 				r.Post("/notes", rt.Notes.Create)
 				r.Put("/notes/{id}", rt.Notes.Update)
 				r.Delete("/notes/{id}", rt.Notes.Delete)

@@ -27,7 +27,7 @@ export function date(iso?: string): string {
 }
 
 export function todayISO(): string {
-  return new Date().toISOString().slice(0, 10);
+  return iso(new Date());
 }
 
 /** First and last day of the current month as ISO strings. */

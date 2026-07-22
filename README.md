@@ -2,7 +2,7 @@
 
 Sistema interno de controle financeiro da Morfos Tech. Backend em Go (Chi + PostgreSQL), frontend em React + TypeScript, identidade visual alinhada ao site da Morfos.
 
-> Módulos: **auth ✅ · projetos ✅ · transações ✅ · recorrência ✅ · anexos ✅ · dashboards ✅ · frontend/tema ✅**.
+> Módulos: **auth ✅ · projetos ✅ · transações ✅ · planejamento ✅ · orçamentos ✅ · recorrência ✅ · anexos ✅ · dashboards ✅ · frontend/tema ✅**.
 
 > **Valores monetários** trafegam na API em **centavos** (inteiro), nunca float. Ex.: `500000` = R$ 5.000,00.
 
@@ -146,6 +146,28 @@ continua opcional para ganhos avulsos e despesas.
 **Filtros do `GET /api/transactions`** (query string): `from`, `to` (`YYYY-MM-DD`),
 `tipo`, `origem`, `project_id`, `user_id`, `category_id`. Para colaborador, o
 `user_id` é sempre forçado ao próprio, ignorando o parâmetro.
+
+## API — Planejamento e orçamentos
+
+Planejamentos representam contas futuras e ficam separados das transações
+realizadas. Uma baixa cria a transação correspondente de forma atômica. A
+criação pode repetir o lançamento mensalmente por até 24 meses; vencimentos no
+fim do mês são ajustados para o último dia válido.
+
+| Método | Rota                              | Descrição |
+|--------|-----------------------------------|-----------|
+| GET    | `/api/planning`                   | Lista por período e situação (`aberto`/`realizado`) |
+| POST   | `/api/planning`                   | Cria uma ou várias provisões mensais |
+| PUT    | `/api/planning/{id}`              | Edita uma provisão em aberto |
+| DELETE | `/api/planning/{id}`              | Exclui uma provisão em aberto |
+| POST   | `/api/planning/{id}/complete`     | Dá baixa e cria a transação realizada |
+| GET    | `/api/planning/cash-flow`         | Projeta entradas, saídas e saldo por data |
+| GET    | `/api/budgets`                    | Compara orçamento e despesa realizada no mês |
+| PUT    | `/api/budgets`                    | Cria ou atualiza limite de uma categoria |
+| DELETE | `/api/budgets/{id}`               | Remove um limite mensal |
+
+O frontend também exporta a lista filtrada de transações em CSV compatível com
+planilhas brasileiras (UTF-8, separador `;` e valores em reais).
 
 ## API — módulo Recorrência
 

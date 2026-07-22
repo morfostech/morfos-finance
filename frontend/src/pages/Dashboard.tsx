@@ -50,6 +50,11 @@ export function Dashboard() {
           <DatePicker ariaLabel="Data final" value={range.to} onChange={(value) => setRange({ ...range, to: value })} />
         </div>
         <div className="toolbar-spacer" />
+        <div className="period-shortcuts" aria-label="Atalhos de período">
+          <button className="btn btn-ghost btn-sm" onClick={() => setRange(monthRange(3))}>3 meses</button>
+          <button className="btn btn-ghost btn-sm" onClick={() => setRange(monthRange(6))}>6 meses</button>
+          <button className="btn btn-ghost btn-sm" onClick={() => setRange(yearRange())}>Ano atual</button>
+        </div>
         <button className="btn btn-ghost btn-sm" onClick={() => setRange(currentMonthRange())}>
           Mês atual
         </button>
@@ -58,6 +63,24 @@ export function Dashboard() {
       {showCompany ? <CompanyView from={range.from} to={range.to} /> : <MeView from={range.from} to={range.to} />}
     </div>
   );
+}
+
+function localISO(value: Date) {
+  const pad = (part: number) => String(part).padStart(2, "0");
+  return `${value.getFullYear()}-${pad(value.getMonth() + 1)}-${pad(value.getDate())}`;
+}
+
+function monthRange(months: number) {
+  const now = new Date();
+  return {
+    from: localISO(new Date(now.getFullYear(), now.getMonth() - months + 1, 1)),
+    to: localISO(new Date(now.getFullYear(), now.getMonth() + 1, 0)),
+  };
+}
+
+function yearRange() {
+  const now = new Date();
+  return { from: `${now.getFullYear()}-01-01`, to: `${now.getFullYear()}-12-31` };
 }
 
 function CompanyView({ from, to }: { from: string; to: string }) {
@@ -71,50 +94,54 @@ function CompanyView({ from, to }: { from: string; to: string }) {
   if (!data) return null;
 
   const rec = data.recorrencia_mes;
+  const recPeriod = data.recorrencia_periodo;
   const forecast = data.recorrencia_futura;
   const forecastMonths = forecast?.meses ?? [];
   const maxForecast = Math.max(1, ...forecastMonths.map((month) => month.previsto));
   const despTotal = data.despesas_por_categoria.reduce((s, c) => s + c.total, 0);
 
+  const transactionsUrl = (params: Record<string, string | undefined>) => {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => value && query.set(key, value));
+    return `/transacoes?${query.toString()}`;
+  };
+  const periodUrl = transactionsUrl({ from, to, contexto: "periodo" });
+  const gainsUrl = transactionsUrl({ tipo: "ganho", from, to, contexto: "ganhos" });
+  const expensesUrl = transactionsUrl({ tipo: "despesa", from, to, contexto: "despesas" });
+
   return (
     <div className="dash">
       <div className="grid grid-4">
-        <KpiMoney label="Saldo em caixa" value={data.saldo_em_caixa} accent="teal" hint="acumulado" />
-        <KpiMoney label="Ganhos no período" value={data.ganhos} />
-        <KpiMoney label="Despesas no período" value={data.despesas} accent="copper" />
-        <KpiMoney
-          label="Resultado"
-          value={data.resultado}
-          accent={data.resultado >= 0 ? "teal" : "danger"}
-        />
+        <DashboardKpi to="/transacoes?contexto=saldo" label="Saldo em caixa" value={data.saldo_em_caixa} accent="teal" hint="realizado · todo o histórico" />
+        <DashboardKpi to={gainsUrl} label="Entradas realizadas" value={data.ganhos} hint="no período selecionado" />
+        <DashboardKpi to={expensesUrl} label="Saídas realizadas" value={data.despesas} accent="copper" hint="no período selecionado" />
+        <DashboardKpi to={periodUrl} label="Resultado realizado" value={data.resultado} accent={data.resultado >= 0 ? "teal" : "danger"} hint="entradas menos saídas" />
       </div>
 
       <div className="grid grid-2 dash-block">
         <div className="card panel">
-          <SectionHead idx="02" title="Implementação acumulada × recorrência mensal" />
-          <div className="split-row">
-            <div>
-              <div className="split-k mono">Implementação</div>
-              <div className="split-v">{money(data.implementacao.a_receber)}</div>
-              <div className="split-s muted">
-                a receber · {money(data.implementacao.recebido)} recebido
-              </div>
+          <SectionHead idx="02" title="Realizado × valores a receber" action={<Link className="panel-link" to="/planejamento">Ver planejamento →</Link>} />
+          <div className="decision-summary">
+            <div className="decision-row">
+              <div><span className="status-dot status-realized" /><span>Receita realizada no período</span></div>
+              <strong className="num accent-teal">{money(data.ganhos)}</strong>
             </div>
-            <div>
-              <div className="split-k mono">Recorrência (mês)</div>
-              <div className="split-v">{money(rec.pendente)}</div>
-              <div className="split-s muted">
-                pendente · {money(rec.recebido)} recebido
-              </div>
+            <div className="decision-row">
+              <div><span className="status-dot status-pending" /><span>Recorrência pendente no período</span></div>
+              <strong className="num accent-copper">{money(recPeriod.pendente)}</strong>
+            </div>
+            <div className="decision-row">
+              <div><span className="status-dot status-future" /><span>Implementação a receber</span></div>
+              <strong className="num">{money(data.implementacao.a_receber)}</strong>
             </div>
           </div>
           <div className="parcelas-note mono muted">
-            acumulado · {data.parcelas_pendentes.quantidade} parcela(s) pendente(s) · {money(data.parcelas_pendentes.total)}
+            implementação acumulada · {data.parcelas_pendentes.quantidade} parcela(s) pendente(s) · {money(data.parcelas_pendentes.total)}
           </div>
         </div>
 
         <div className="card panel">
-          <SectionHead idx="03" title="Ganhos por origem" />
+          <SectionHead idx="03" title="Entradas realizadas por origem" action={<Link className="panel-link" to={gainsUrl}>Ver lançamentos →</Link>} />
           <Bar label="Implementação" value={data.ganhos_por_origem.implementacao} total={data.ganhos || 1} />
           <Bar label="Recorrência" value={data.ganhos_por_origem.recorrencia} total={data.ganhos || 1} />
           <Bar label="Avulso" value={data.ganhos_por_origem.avulso} total={data.ganhos || 1} />
@@ -126,7 +153,7 @@ function CompanyView({ from, to }: { from: string; to: string }) {
 
       <div className="grid grid-2 dash-block">
         <div className="card panel">
-          <SectionHead idx="04" title="Despesas por categoria" />
+          <SectionHead idx="04" title="Saídas realizadas por categoria" action={<Link className="panel-link" to={expensesUrl}>Ver lançamentos →</Link>} />
           {data.despesas_por_categoria.length === 0 ? (
             <Empty>Sem despesas no período.</Empty>
           ) : (
@@ -137,20 +164,19 @@ function CompanyView({ from, to }: { from: string; to: string }) {
         </div>
 
         <div className="card panel">
-          <SectionHead idx="05" title={`Recorrência · ${monthLabel(rec.mes)}/${rec.ano}`} />
-          <div className="rec-totals">
-            <span>Previsto <b className="num">{money(rec.previsto)}</b></span>
-            <span>Recebido <b className="num accent-teal">{money(rec.recebido)}</b></span>
-            <span>Pendente <b className="num accent-copper">{money(rec.pendente)}</b></span>
+          <SectionHead idx="05" title="Recorrência no período" action={<Link className="panel-link" to={`/recorrencia?ano=${rec.ano}&mes=${rec.mes}`}>Abrir recorrência →</Link>} />
+          <p className="panel-explainer">Cada mensalidade é somada uma vez por mês ativo dentro do filtro. Recebido considera apenas transações efetivamente lançadas.</p>
+          <div className="rec-totals rec-totals-featured">
+            <span>Previsto acumulado <b className="num">{money(recPeriod.previsto)}</b></span>
+            <span>Recebido <b className="num accent-teal">{money(recPeriod.recebido)}</b></span>
+            <span>A receber <b className="num accent-copper">{money(recPeriod.pendente)}</b></span>
           </div>
-          <div className="rec-list">
-            {rec.projetos.map((p) => (
-              <div key={p.project_id} className="rec-item">
-                <span className="rec-name">{p.nome}</span>
-                <span className="num muted">{money(p.recebido)} / {money(p.previsto)}</span>
-                <span className={`pill ${p.pendente === 0 ? "pill-ok" : "pill-pending"}`}>
-                  {p.pendente === 0 ? "quitado" : money(p.pendente)}
-                </span>
+          <div className="period-months" aria-label="Recorrência por mês do período">
+            {recPeriod.meses.map((item) => (
+              <div className="period-month" key={`${item.ano}-${item.mes}`}>
+                <div className="period-month-head"><span className="mono">{monthLabel(item.mes)}/{String(item.ano).slice(-2)}</span><strong className="num">{money(item.previsto)}</strong></div>
+                <div className="period-month-bar"><span style={{ width: `${item.previsto > 0 ? Math.min(100, (item.recebido / item.previsto) * 100) : 0}%` }} /></div>
+                <div className="period-month-meta"><span>recebido {money(item.recebido)}</span><span>pendente {money(item.pendente)}</span></div>
               </div>
             ))}
           </div>
@@ -158,8 +184,8 @@ function CompanyView({ from, to }: { from: string; to: string }) {
             <div className="forecast">
               <div className="forecast-head">
                 <div>
-                  <span className="split-k mono">Próximos {forecast.horizonte_meses} meses</span>
-                  <span className="forecast-note muted">a partir do mês seguinte</span>
+                  <span className="split-k mono">Projeção após o período · {forecast.horizonte_meses} meses</span>
+                  <span className="forecast-note muted">não compõe o caixa realizado</span>
                 </div>
                 <strong className="forecast-total num">{money(forecast.total)}</strong>
               </div>
@@ -227,6 +253,15 @@ function BreakdownTable({ title, idx, rows }: { title: string; idx: string; rows
   );
 }
 
+function DashboardKpi({ to, label, value, hint, accent }: { to: string; label: string; value: number; hint?: string; accent?: "teal" | "copper" | "danger" | "bone" }) {
+  return (
+    <Link className="kpi-link" to={to} aria-label={`${label}: ${money(value)}. Abrir detalhes`}>
+      <KpiMoney label={label} value={value} hint={hint} accent={accent} />
+      <span className="kpi-open" aria-hidden>Ver detalhes <b>→</b></span>
+    </Link>
+  );
+}
+
 function MeView({ from, to }: { from: string; to: string }) {
   const { data, loading, error } = useAsync<MeDashboard>(
     () => api.get(`/dashboard/me?from=${from}&to=${to}`),
@@ -240,9 +275,9 @@ function MeView({ from, to }: { from: string; to: string }) {
   return (
     <div className="dash">
       <div className="grid grid-3">
-        <KpiMoney label="Meus ganhos" value={data.ganhos} accent="teal" />
-        <KpiMoney label="Minhas despesas" value={data.despesas} accent="copper" />
-        <KpiMoney label="Saldo" value={data.saldo} accent={data.saldo >= 0 ? "teal" : "danger"} />
+        <DashboardKpi to={`/transacoes?tipo=ganho&from=${from}&to=${to}&contexto=ganhos`} label="Meus ganhos" value={data.ganhos} accent="teal" />
+        <DashboardKpi to={`/transacoes?tipo=despesa&from=${from}&to=${to}&contexto=despesas`} label="Minhas despesas" value={data.despesas} accent="copper" />
+        <DashboardKpi to={`/transacoes?from=${from}&to=${to}&contexto=periodo`} label="Saldo" value={data.saldo} accent={data.saldo >= 0 ? "teal" : "danger"} />
       </div>
 
       <div className="card panel dash-block">

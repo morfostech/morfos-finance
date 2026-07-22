@@ -27,10 +27,11 @@ const NAV: NavItem[] = [
   { to: "/", label: "Dashboard", idx: "01" },
   { to: "/projetos", label: "Projetos", idx: "02" },
   { to: "/transacoes", label: "Transações", idx: "03" },
-  { to: "/anotacoes", label: "Anotações", idx: "04" },
-  { to: "/solicitacoes", label: "Solicitações", idx: "05" },
-  { to: "/recorrencia", label: "Recorrência", idx: "06", roles: ["admin", "socio"] },
-  { to: "/usuarios", label: "Usuários", idx: "07", roles: ["admin", "socio"] },
+  { to: "/planejamento", label: "Planejamento", idx: "04", roles: ["admin", "socio"] },
+  { to: "/anotacoes", label: "Anotações", idx: "05" },
+  { to: "/solicitacoes", label: "Solicitações", idx: "06" },
+  { to: "/recorrencia", label: "Recorrência", idx: "07", roles: ["admin", "socio"] },
+  { to: "/usuarios", label: "Usuários", idx: "08", roles: ["admin", "socio"] },
 ];
 
 export function AppShell() {

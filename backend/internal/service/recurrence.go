@@ -52,6 +52,36 @@ func (s *RecurrenceService) Year(ctx context.Context, ano int, projectID *int64)
 	return out, nil
 }
 
+// Period accumulates recurrence for every calendar month touched by [from,
+// to]. A monthly fee is counted once for each active month; received values
+// continue to come exclusively from transactions in that month.
+func (s *RecurrenceService) Period(ctx context.Context, from, to time.Time, projectID *int64) (*domain.RecurrencePeriod, error) {
+	if to.Before(from) {
+		return nil, fmt.Errorf("%w: período inválido", domain.ErrValidation)
+	}
+	start, _ := domain.MonthBounds(from.Year(), from.Month())
+	last, _ := domain.MonthBounds(to.Year(), to.Month())
+	out := &domain.RecurrencePeriod{Meses: []domain.RecurrencePeriodMonth{}}
+
+	for cursor, count := start, 0; !cursor.After(last); cursor, count = cursor.AddDate(0, 1, 0), count+1 {
+		if count >= 120 {
+			return nil, fmt.Errorf("%w: período de recorrência limitado a 120 meses", domain.ErrValidation)
+		}
+		summary, err := s.Month(ctx, cursor.Year(), int(cursor.Month()), projectID)
+		if err != nil {
+			return nil, err
+		}
+		out.Meses = append(out.Meses, domain.RecurrencePeriodMonth{
+			Ano: summary.Ano, Mes: summary.Mes, Previsto: summary.Previsto,
+			Recebido: summary.Recebido, Pendente: summary.Pendente,
+		})
+		out.Previsto += summary.Previsto
+		out.Recebido += summary.Recebido
+		out.Pendente += summary.Pendente
+	}
+	return out, nil
+}
+
 // Forecast projects recurring revenue over a bounded number of months,
 // starting with the month containing start.
 func (s *RecurrenceService) Forecast(ctx context.Context, start time.Time, months int, projectID *int64) (*domain.RecurrenceForecast, error) {

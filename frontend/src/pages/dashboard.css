@@ -34,10 +34,92 @@
 .dash-block {
   margin-top: 2px;
 }
+.period-shortcuts {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 .panel {
   padding: 24px;
   min-width: 0;
 }
+
+.kpi-link {
+  position: relative;
+  min-width: 0;
+}
+.kpi-link .kpi {
+  height: 100%;
+  padding-bottom: 43px;
+}
+.kpi-link:hover .kpi,
+.kpi-link:focus-visible .kpi {
+  border-color: var(--teal);
+  transform: translateY(-2px);
+  box-shadow: 0 22px 45px -28px rgba(22, 176, 160, 0.6);
+}
+.kpi-link:focus-visible {
+  outline: none;
+}
+.kpi-open {
+  position: absolute;
+  left: 22px;
+  bottom: 16px;
+  color: var(--mist);
+  font-size: 11px;
+  font-family: var(--mono);
+  letter-spacing: 0.04em;
+}
+.kpi-open b {
+  color: var(--teal);
+  margin-left: 3px;
+}
+.panel-link {
+  color: var(--teal);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.panel-link:hover { color: var(--bone); }
+.panel-explainer {
+  color: var(--mist);
+  font-size: 12px;
+  line-height: 1.6;
+  margin: -8px 0 18px;
+  max-width: 680px;
+}
+
+.decision-summary {
+  display: flex;
+  flex-direction: column;
+}
+.decision-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 13px 0;
+  border-top: 1px solid var(--line);
+}
+.decision-row:first-child { border-top: 0; }
+.decision-row > div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--mist);
+  font-size: 13px;
+}
+.decision-row strong { white-space: nowrap; }
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+.status-realized { background: var(--teal); }
+.status-pending { background: var(--copper); }
+.status-future { background: var(--mist); }
 
 .split-row {
   display: grid;
@@ -83,6 +165,53 @@
   font-size: 20px;
   color: var(--bone);
   margin-top: 3px;
+}
+.rec-totals-featured {
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-btn);
+  background: rgba(255, 255, 255, 0.018);
+}
+.period-months {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 260px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+.period-month {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.period-month-head,
+.period-month-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.period-month-head span {
+  color: var(--mist);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+.period-month-head strong { font-size: 12px; }
+.period-month-meta {
+  color: var(--mist);
+  font-size: 10px;
+}
+.period-month-bar {
+  height: 7px;
+  background: var(--graphite);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.period-month-bar span {
+  display: block;
+  height: 100%;
+  background: var(--teal);
+  border-radius: inherit;
 }
 .rec-list {
   display: flex;
@@ -297,5 +426,14 @@
   .forecast-head {
     position: sticky;
     left: 0;
+  }
+  .period-shortcuts {
+    width: 100%;
+  }
+  .period-shortcuts .btn {
+    flex: 1;
+  }
+  .decision-row {
+    align-items: flex-start;
   }
 }

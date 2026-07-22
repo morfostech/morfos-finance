@@ -137,6 +137,70 @@ tr.clickable {
   min-width: 150px;
 }
 
+.transaction-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  margin: -8px 0 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-card);
+  overflow: hidden;
+  background: var(--line);
+}
+.transaction-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px 16px;
+  background: var(--ink-2);
+}
+.transaction-summary span {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.transaction-summary strong {
+  font-family: var(--display);
+  font-size: 18px;
+}
+.transaction-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.transaction-form .form-row {
+  gap: 18px;
+}
+.field-help {
+  color: var(--mist);
+  font-size: 11px;
+  line-height: 1.5;
+}
+.recurring-guidance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 13px 14px;
+  border: 1px solid rgba(22, 176, 160, 0.25);
+  border-radius: var(--r-btn);
+  background: var(--ok-soft);
+}
+.recurring-guidance > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.recurring-guidance strong { font-size: 12px; }
+.recurring-guidance span { color: var(--mist); font-size: 11px; }
+.recurring-guidance a {
+  color: var(--teal);
+  font-family: var(--mono);
+  font-size: 10px;
+  white-space: nowrap;
+  text-transform: uppercase;
+}
+
 .member-picker {
   display: flex;
   flex-direction: column;
@@ -179,5 +243,12 @@ tr.clickable {
   .list-file {
     align-items: flex-start;
     flex-wrap: wrap;
+  }
+  .transaction-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .recurring-guidance {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

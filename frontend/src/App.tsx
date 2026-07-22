@@ -12,6 +12,7 @@ import { Recurrence } from "./pages/Recurrence";
 import { Users } from "./pages/Users";
 import { Notes } from "./pages/Notes";
 import { ChangeRequests } from "./pages/ChangeRequests";
+import { Planning } from "./pages/Planning";
 import type { Role } from "./lib/types";
 
 export function App() {
@@ -43,6 +44,7 @@ export function App() {
           <Route path="/solicitacoes" element={<ChangeRequests />} />
           <Route element={<RoleGate roles={["admin", "socio"]} />}>
             <Route path="/recorrencia" element={<Recurrence />} />
+            <Route path="/planejamento" element={<Planning />} />
           </Route>
           <Route element={<RoleGate roles={["admin", "socio"]} />}>
             <Route path="/usuarios" element={<Users />} />
