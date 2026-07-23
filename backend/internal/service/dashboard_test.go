@@ -17,7 +17,7 @@ type fakeDashboardRepo struct {
 	userDespesas domain.Money
 }
 
-func (f *fakeDashboardRepo) SaldoEmCaixa(context.Context) (domain.Money, error) {
+func (f *fakeDashboardRepo) SaldoEmCaixa(context.Context, time.Time) (domain.Money, error) {
 	return f.saldo, nil
 }
 func (f *fakeDashboardRepo) PeriodTotals(context.Context, time.Time, time.Time) (domain.Money, domain.Money, error) {

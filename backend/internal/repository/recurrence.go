@@ -23,7 +23,8 @@ func NewRecurrenceRepository(pool *pgxpool.Pool) *RecurrenceRepository {
 // previsto/pendente math are done in the domain layer (BuildSummary).
 func (r *RecurrenceRepository) MonthRows(ctx context.Context, start, end time.Time, projectID *int64) ([]domain.RecurrenceRow, error) {
 	q := `
-		SELECT p.id, p.nome, p.valor_mensal::text, p.data_inicio, p.data_fim,
+		SELECT p.id, p.nome, p.valor_mensal::text, p.dia_vencimento,
+		       p.data_inicio, p.data_fim, p.status,
 		       COALESCE(SUM(t.valor), 0)::text AS recebido
 		FROM projects p
 		LEFT JOIN transactions t
@@ -54,7 +55,9 @@ func (r *RecurrenceRepository) MonthRows(ctx context.Context, start, end time.Ti
 			inicio      *time.Time
 			fim         *time.Time
 		)
-		if err := rows.Scan(&row.ProjectID, &row.Nome, &valorMensal, &inicio, &fim, &recebido); err != nil {
+		var diaVencimento *int32
+		if err := rows.Scan(&row.ProjectID, &row.Nome, &valorMensal, &diaVencimento,
+			&inicio, &fim, &row.Status, &recebido); err != nil {
 			return nil, err
 		}
 		if row.ValorMensal, err = domain.ParseNumeric(valorMensal); err != nil {
@@ -65,6 +68,10 @@ func (r *RecurrenceRepository) MonthRows(ctx context.Context, start, end time.Ti
 		}
 		row.DataInicio = datePtr(inicio)
 		row.DataFim = datePtr(fim)
+		if diaVencimento != nil {
+			day := int(*diaVencimento)
+			row.DiaVencimento = &day
+		}
 		out = append(out, row)
 	}
 	return out, rows.Err()

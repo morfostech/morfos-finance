@@ -5,7 +5,7 @@ import { useAuth } from "../lib/auth";
 import { useAsync } from "../lib/hooks";
 import { date, money, todayISO, toCentavos } from "../lib/format";
 import { canManage, type Category, type Project, type Transaction, type TxType, type User } from "../lib/types";
-import { Empty, ErrorBanner, Select, Spinner } from "../components/ui";
+import { BackButton, Empty, ErrorBanner, Select, Spinner } from "../components/ui";
 import { DatePicker } from "../components/DatePicker";
 import { Modal } from "../components/Modal";
 import { NotesPanel } from "../components/NotesPanel";
@@ -73,13 +73,12 @@ export function Transactions() {
 
   return (
     <div>
+      <BackButton />
       <header className="page-head">
         <span className="kicker">03 / Transações</span>
         <h1>{contextTitle}</h1>
         <p>{contexto ? "Relação dos lançamentos que formam o valor selecionado no dashboard." : "Ganhos e despesas, com origem, categoria e projeto."}</p>
       </header>
-
-      {contexto && <Link className="back-link" to="/">← Voltar ao dashboard</Link>}
 
       <div className="filters">
         <div className="field">

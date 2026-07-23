@@ -1,4 +1,5 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, type FocusEvent, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import { money } from "../lib/format";
 
 export interface SelectOption {
@@ -187,6 +188,74 @@ export function Empty({ children }: { children: ReactNode }) {
 
 export function ErrorBanner({ children }: { children: ReactNode }) {
   return <div className="error-banner">{children}</div>;
+}
+
+export function BackButton({ fallback = "/", label = "Voltar" }: { fallback?: string; label?: string }) {
+  const navigate = useNavigate();
+  return (
+    <button
+      type="button"
+      className="back-link"
+      onClick={() => Number(window.history.state?.idx ?? 0) > 0 ? navigate(-1) : navigate(fallback)}
+      aria-label={`${label} para a página anterior`}
+    >
+      <span aria-hidden>←</span> {label}
+    </button>
+  );
+}
+
+export function ChartTooltip({
+  label,
+  value,
+  description,
+  className,
+  children,
+}: {
+  label: string;
+  value: string;
+  description: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  const tooltipId = useId();
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null);
+
+  const place = (x: number, y: number) => {
+    const tooltipWidth = 260;
+    const tooltipHeight = 96;
+    setPosition({
+      x: Math.max(8, Math.min(x + 14, window.innerWidth - tooltipWidth - 8)),
+      y: Math.max(8, Math.min(y + 14, window.innerHeight - tooltipHeight - 8)),
+    });
+  };
+  const followPointer = (event: ReactPointerEvent<HTMLDivElement>) => place(event.clientX, event.clientY);
+  const placeByElement = (event: FocusEvent<HTMLDivElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    place(rect.left + rect.width / 2, rect.top + rect.height / 2);
+  };
+
+  return (
+    <div
+      className={`chart-tooltip-target ${className ?? ""}`}
+      tabIndex={0}
+      aria-label={`${label}. ${value}. ${description}`}
+      aria-describedby={position ? tooltipId : undefined}
+      onPointerEnter={followPointer}
+      onPointerMove={followPointer}
+      onPointerLeave={() => setPosition(null)}
+      onFocus={placeByElement}
+      onBlur={() => setPosition(null)}
+    >
+      {children}
+      {position && (
+        <div id={tooltipId} role="tooltip" className="chart-tooltip-bubble" style={{ left: position.x, top: position.y }}>
+          <span className="chart-tooltip-label mono">{label}</span>
+          <strong className="chart-tooltip-value num">{value}</strong>
+          <span className="chart-tooltip-description">{description}</span>
+        </div>
+      )}
+    </div>
+  );
 }
 
 /** A labeled horizontal bar for simple distributions (expenses, recurrence). */

@@ -73,7 +73,7 @@ func run() error {
 	dashboardSvc := service.NewDashboardService(repository.NewDashboardRepository(pool), recurrenceSvc, projectSvc)
 	noteSvc := service.NewNoteService(repository.NewNoteRepository(pool))
 	changeRequestSvc := service.NewChangeRequestService(repository.NewChangeRequestRepository(pool), noteSvc)
-	planningSvc := service.NewPlanningService(repository.NewPlanningRepository(pool))
+	planningSvc := service.NewPlanningService(repository.NewPlanningRepository(pool), recurrenceSvc)
 
 	localUploadDir := ""
 	if !cfg.Storage.UseS3() {

@@ -106,7 +106,7 @@ func TestInstallmentPaymentFeedsDashboardAtomically(t *testing.T) {
 
 func assertDashboardAmounts(t *testing.T, ctx context.Context, dashboard *DashboardRepository, wantSaldo, wantReceived, wantPending domain.Money) {
 	t.Helper()
-	saldo, err := dashboard.SaldoEmCaixa(ctx)
+	saldo, err := dashboard.SaldoEmCaixa(ctx, domain.MustDate("2026-07-31").Time)
 	if err != nil {
 		t.Fatal(err)
 	}

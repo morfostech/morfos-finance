@@ -46,8 +46,8 @@ function pad(n: number): string {
 }
 
 const MESES = [
-  "jan", "fev", "mar", "abr", "mai", "jun",
-  "jul", "ago", "set", "out", "nov", "dez",
+  "JAN", "FEV", "MAR", "ABR", "MAI", "JUN",
+  "JUL", "AGO", "SET", "OUT", "NOV", "DEZ",
 ];
 export function monthLabel(mes: number): string {
   return MESES[mes - 1] ?? String(mes);

@@ -17,15 +17,21 @@ type PlanningRepo interface {
 	List(context.Context, domain.PlanningFilter) ([]domain.PlannedEntry, error)
 	Complete(context.Context, int64, int64, domain.Date) (*domain.PlannedEntry, error)
 	OpeningBalance(context.Context, time.Time) (domain.Money, error)
+	ConfirmedTransactions(context.Context, time.Time, time.Time) ([]domain.CashFlowMovement, error)
 	CountOverdue(context.Context, time.Time) (int, error)
 	UpsertBudget(context.Context, int64, int, int, domain.Money, int64) (*domain.ExpenseBudget, error)
 	ListBudgets(context.Context, int, int) ([]domain.ExpenseBudget, error)
 	DeleteBudget(context.Context, int64) error
 }
 
-type PlanningService struct{ repo PlanningRepo }
+type PlanningService struct {
+	repo       PlanningRepo
+	recurrence *RecurrenceService
+}
 
-func NewPlanningService(repo PlanningRepo) *PlanningService { return &PlanningService{repo: repo} }
+func NewPlanningService(repo PlanningRepo, recurrence *RecurrenceService) *PlanningService {
+	return &PlanningService{repo: repo, recurrence: recurrence}
+}
 
 type PlannedInput struct {
 	Tipo         domain.TxType
@@ -136,7 +142,37 @@ func (s *PlanningService) Forecast(ctx context.Context, from, to domain.Date) (*
 	}
 
 	byDay := map[string]*domain.CashFlowDay{}
-	var income, expense domain.Money
+	confirmed, err := s.repo.ConfirmedTransactions(ctx, from.Time, to.Time)
+	if err != nil {
+		return nil, err
+	}
+	var confirmedIncome, confirmedExpense domain.Money
+	for _, movement := range confirmed {
+		key := movement.Data.Format("2006-01-02")
+		day := byDay[key]
+		if day == nil {
+			day = &domain.CashFlowDay{Data: movement.Data, Itens: []domain.CashFlowItem{}}
+			byDay[key] = day
+		}
+		day.Itens = append(day.Itens, movement.Item)
+		if movement.Item.Tipo == domain.TxGanho {
+			day.Entradas += movement.Item.Valor
+			confirmedIncome += movement.Item.Valor
+		} else {
+			day.Saidas += movement.Item.Valor
+			confirmedExpense += movement.Item.Valor
+		}
+	}
+
+	manualRecurrence := map[string]bool{}
+	for _, p := range entries {
+		if p.Origem == nil || *p.Origem != domain.OrigemRecorrencia || p.ProjectID == nil {
+			continue
+		}
+		manualRecurrence[recurrencePlanKey(*p.ProjectID, p.DueDate.Time)] = true
+	}
+
+	var manualIncome, automaticIncome, manualExpense domain.Money
 	for _, p := range entries {
 		effectiveDate := p.DueDate
 		if effectiveDate.Time.Before(from.Time) {
@@ -145,15 +181,63 @@ func (s *PlanningService) Forecast(ctx context.Context, from, to domain.Date) (*
 		key := effectiveDate.Format("2006-01-02")
 		day := byDay[key]
 		if day == nil {
-			day = &domain.CashFlowDay{Data: effectiveDate}
+			day = &domain.CashFlowDay{Data: effectiveDate, Itens: []domain.CashFlowItem{}}
 			byDay[key] = day
 		}
+		day.Itens = append(day.Itens, domain.CashFlowItem{
+			Tipo: p.Tipo, Valor: p.Valor, Descricao: p.Descricao,
+			ProjectID: p.ProjectID, Origem: p.Origem,
+		})
 		if p.Tipo == domain.TxGanho {
 			day.Entradas += p.Valor
-			income += p.Valor
+			manualIncome += p.Valor
 		} else {
 			day.Saidas += p.Valor
-			expense += p.Valor
+			manualExpense += p.Valor
+		}
+	}
+
+	if s.recurrence != nil {
+		firstMonth := time.Date(from.Year(), from.Month(), 1, 0, 0, 0, 0, time.UTC)
+		lastMonth := time.Date(to.Year(), to.Month(), 1, 0, 0, 0, 0, time.UTC)
+		for cursor, count := firstMonth, 0; !cursor.After(lastMonth); cursor, count = cursor.AddDate(0, 1, 0), count+1 {
+			if count >= 120 {
+				return nil, fmt.Errorf("%w: projeção limitada a 120 meses", domain.ErrValidation)
+			}
+			summary, err := s.recurrence.monthAt(ctx, cursor.Year(), int(cursor.Month()), nil, financeToday())
+			if err != nil {
+				return nil, err
+			}
+			for _, project := range summary.Projetos {
+				if project.Pendente <= 0 || project.Vencimento == nil || project.Vencimento.Time.After(to.Time) {
+					continue
+				}
+				if manualRecurrence[recurrencePlanKey(project.ProjectID, project.Vencimento.Time)] {
+					continue
+				}
+				effectiveDate := *project.Vencimento
+				if effectiveDate.Time.Before(from.Time) {
+					effectiveDate = from
+				}
+				key := effectiveDate.Format("2006-01-02")
+				day := byDay[key]
+				if day == nil {
+					day = &domain.CashFlowDay{Data: effectiveDate, Itens: []domain.CashFlowItem{}}
+					byDay[key] = day
+				}
+				projectID := project.ProjectID
+				origin := domain.OrigemRecorrencia
+				day.Entradas += project.Pendente
+				day.Itens = append(day.Itens, domain.CashFlowItem{
+					Tipo: domain.TxGanho, Valor: project.Pendente,
+					Descricao: "Mensalidade · " + project.Nome,
+					ProjectID: &projectID, Origem: &origin, Automatico: true,
+				})
+				automaticIncome += project.Pendente
+				if project.Vencimento.Time.Before(financeToday()) {
+					overdue++
+				}
+			}
 		}
 	}
 	days := make([]domain.CashFlowDay, 0)
@@ -166,9 +250,17 @@ func (s *PlanningService) Forecast(ctx context.Context, from, to domain.Date) (*
 			days = append(days, *day)
 		}
 	}
+	income := confirmedIncome + manualIncome + automaticIncome
+	expense := confirmedExpense + manualExpense
 	return &domain.CashFlowForecast{Periodo: domain.Period{From: from, To: to}, SaldoInicial: opening,
-		Entradas: income, Saidas: expense, SaldoFinal: opening + income - expense,
+		Entradas: income, EntradasAutomaticas: automaticIncome, EntradasManuais: manualIncome,
+		EntradasConfirmadas: confirmedIncome, Saidas: expense, SaidasManuais: manualExpense,
+		SaidasConfirmadas: confirmedExpense, SaldoFinal: opening + income - expense,
 		Vencidos: overdue, Dias: days}, nil
+}
+
+func recurrencePlanKey(projectID int64, due time.Time) string {
+	return fmt.Sprintf("%d:%04d-%02d", projectID, due.Year(), due.Month())
 }
 
 func (s *PlanningService) UpsertBudget(ctx context.Context, categoryID int64, year, month int, value domain.Money, createdBy int64) (*domain.ExpenseBudget, error) {

@@ -119,6 +119,7 @@
 }
 .status-realized { background: var(--teal); }
 .status-pending { background: var(--copper); }
+.status-overdue { background: var(--danger); }
 .status-future { background: var(--mist); }
 
 .split-row {
@@ -334,41 +335,60 @@
   font-size: 12px;
 }
 
+.timeline-scroll { overflow-x: auto; padding-bottom: 4px; }
 .timeline {
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  height: 180px;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(62px, 1fr));
+  gap: 8px;
+  min-width: 840px;
+  height: 250px;
   padding: 8px 0 0;
 }
 .tl-col {
-  flex: 1;
+  display: grid;
+  grid-template-rows: 38px 140px auto auto;
+  align-items: center;
+  justify-items: center;
+  gap: 6px;
+  height: 100%;
+}
+.tl-values {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  height: 100%;
-  justify-content: flex-end;
+  gap: 2px;
+  white-space: nowrap;
 }
-.tl-bar {
+.tl-values strong { font-family: var(--mono); font-size: 10px; }
+.tl-values span { color: var(--mist); font-size: 9px; }
+.tl-plot {
+  position: relative;
   width: 100%;
-  max-width: 42px;
-  background: var(--graphite);
-  border-radius: 5px 5px 0 0;
-  display: flex;
-  flex-direction: column-reverse;
-  overflow: hidden;
-  min-height: 3px;
+  max-width: 58px;
+  height: 140px;
+  border-bottom: 1px solid var(--line);
 }
-.tl-fill {
-  width: 100%;
-  background: var(--grad);
+.tl-planned,
+.tl-received {
+  position: absolute;
+  bottom: 0;
+  min-height: 2px;
+  border-radius: 4px 4px 0 0;
 }
+.tl-planned { left: 5px; width: calc(50% - 7px); background: var(--graphite); }
+.tl-received { right: 5px; width: calc(50% - 7px); background: var(--grad); }
 .tl-label {
   font-size: 10px;
   color: var(--mist);
   text-transform: uppercase;
 }
+.tl-state {
+  font-size: 8px;
+  color: var(--mist);
+  text-align: center;
+  white-space: nowrap;
+}
+.tl-state.is-overdue { color: var(--danger); }
 .tl-legend {
   display: flex;
   gap: 18px;
@@ -418,7 +438,7 @@
     justify-self: start;
   }
   .timeline {
-    gap: 5px;
+    gap: 8px;
   }
   .forecast {
     overflow-x: auto;

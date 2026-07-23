@@ -76,6 +76,10 @@ export interface ProjectRecurrence {
   previsto: number;
   recebido: number;
   pendente: number;
+  vencido: number;
+  a_vencer: number;
+  vencimento?: string;
+  situacao: "quitado" | "parcial" | "vencido" | "a_vencer" | "recebido";
   ativo: boolean;
 }
 
@@ -85,6 +89,8 @@ export interface RecurrenceSummary {
   previsto: number;
   recebido: number;
   pendente: number;
+  vencido: number;
+  a_vencer: number;
   projetos: ProjectRecurrence[];
 }
 
@@ -98,7 +104,9 @@ export interface RecurrencePeriod {
   previsto: number;
   recebido: number;
   pendente: number;
-  meses: { ano: number; mes: number; previsto: number; recebido: number; pendente: number }[];
+  vencido: number;
+  a_vencer: number;
+  meses: { ano: number; mes: number; previsto: number; recebido: number; pendente: number; vencido: number; a_vencer: number }[];
 }
 
 export interface CategoryTotal {
@@ -158,10 +166,21 @@ export interface CashFlowForecast {
   periodo: { from: string; to: string };
   saldo_inicial: number;
   entradas: number;
+  entradas_automaticas: number;
+  entradas_manuais: number;
+  entradas_confirmadas: number;
   saidas: number;
+  saidas_manuais: number;
+  saidas_confirmadas: number;
   saldo_final: number;
   vencidos: number;
-  dias: { data: string; entradas: number; saidas: number; saldo_projetado: number }[];
+  dias: {
+    data: string;
+    entradas: number;
+    saidas: number;
+    saldo_projetado: number;
+    itens: { tipo: TxType; valor: number; descricao: string; project_id?: number; origem?: TxOrigem; automatico: boolean; confirmado: boolean }[];
+  }[];
 }
 
 export interface ExpenseBudget {
