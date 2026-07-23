@@ -74,6 +74,7 @@ func run() error {
 	noteSvc := service.NewNoteService(repository.NewNoteRepository(pool))
 	changeRequestSvc := service.NewChangeRequestService(repository.NewChangeRequestRepository(pool), noteSvc)
 	planningSvc := service.NewPlanningService(repository.NewPlanningRepository(pool), recurrenceSvc)
+	viaPermutaSvc := service.NewViaPermutaService(repository.NewViaPermutaRepository(pool))
 
 	localUploadDir := ""
 	if !cfg.Storage.UseS3() {
@@ -91,6 +92,7 @@ func run() error {
 		Notes:          handlers.NewNoteHandler(noteSvc),
 		ChangeRequests: handlers.NewChangeRequestHandler(changeRequestSvc),
 		Planning:       handlers.NewPlanningHandler(planningSvc),
+		ViaPermuta:     handlers.NewViaPermutaHandler(viaPermutaSvc),
 		Authn:          middleware.NewAuthenticator(tokens),
 		CORSOrigins:    cfg.CORSOrigins,
 		LocalUploadDir: localUploadDir,

@@ -28,6 +28,7 @@ type Router struct {
 	Notes          *handlers.NoteHandler
 	ChangeRequests *handlers.ChangeRequestHandler
 	Planning       *handlers.PlanningHandler
+	ViaPermuta     *handlers.ViaPermutaHandler
 	Authn          *middleware.Authenticator
 	CORSOrigins    []string
 
@@ -112,6 +113,19 @@ func (rt *Router) Build() http.Handler {
 				r.Get("/budgets", rt.Planning.ListBudgets)
 				r.Put("/budgets", rt.Planning.UpsertBudget)
 				r.Delete("/budgets/{id}", rt.Planning.DeleteBudget)
+
+				// Via Permuta is an independent VP ledger. It never feeds the BRL cash dashboard.
+				r.Get("/via-permuta/summary", rt.ViaPermuta.Summary)
+				r.Get("/via-permuta/settings", rt.ViaPermuta.GetSettings)
+				r.Put("/via-permuta/settings", rt.ViaPermuta.UpdateSettings)
+				r.Get("/via-permuta/transactions", rt.ViaPermuta.ListTransactions)
+				r.Post("/via-permuta/transactions", rt.ViaPermuta.CreateTransaction)
+				r.Put("/via-permuta/transactions/{id}", rt.ViaPermuta.UpdateTransaction)
+				r.Delete("/via-permuta/transactions/{id}", rt.ViaPermuta.DeleteTransaction)
+				r.Get("/via-permuta/offers", rt.ViaPermuta.ListOffers)
+				r.Post("/via-permuta/offers", rt.ViaPermuta.CreateOffer)
+				r.Put("/via-permuta/offers/{id}", rt.ViaPermuta.UpdateOffer)
+				r.Delete("/via-permuta/offers/{id}", rt.ViaPermuta.DeleteOffer)
 				r.Post("/notes", rt.Notes.Create)
 				r.Put("/notes/{id}", rt.Notes.Update)
 				r.Delete("/notes/{id}", rt.Notes.Delete)

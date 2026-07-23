@@ -70,6 +70,54 @@ export interface Category {
   nome: string;
 }
 
+export type VPTransactionType = "venda" | "compra";
+export type VPTransactionStatus = "negociando" | "concluida" | "recusada" | "cancelada";
+export type VPOfferStatus = "aberta" | "liberada" | "pendente" | "bloqueada" | "encerrada";
+
+export interface VPTransaction {
+  id: number;
+  tipo: VPTransactionType;
+  status: VPTransactionStatus;
+  valor: number;
+  data: string;
+  permutante: string;
+  oferta: string;
+  project_id?: number;
+  voucher_code?: string;
+  observacoes?: string;
+  created_by: number;
+}
+
+export interface VPOffer {
+  id: number;
+  titulo: string;
+  descricao?: string;
+  valor?: number;
+  negociavel: boolean;
+  status: VPOfferStatus;
+  external_url?: string;
+  created_by: number;
+}
+
+export interface VPSummary {
+  saldo: number;
+  limite_credito: number;
+  disponivel: number;
+  vendas_periodo: number;
+  compras_periodo: number;
+  ticket_medio_venda: number;
+  ticket_medio_compra: number;
+  negociacoes_abertas: number;
+  ofertas_abertas: number;
+  ofertas_liberadas: number;
+  ofertas_com_pendencia: number;
+}
+
+export interface VPSettings {
+  limite_credito: number;
+  updated_at: string;
+}
+
 export interface ProjectRecurrence {
   project_id: number;
   nome: string;
