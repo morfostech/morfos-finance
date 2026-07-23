@@ -9,7 +9,7 @@ import (
 
 // DashboardRepo is the aggregate read-model the dashboards need.
 type DashboardRepo interface {
-	SaldoEmCaixa(ctx context.Context) (domain.Money, error)
+	SaldoEmCaixa(ctx context.Context, asOf time.Time) (domain.Money, error)
 	PeriodTotals(ctx context.Context, from, to time.Time) (ganhos, despesas domain.Money, err error)
 	GanhosPorOrigem(ctx context.Context, from, to time.Time) (domain.OrigemTotals, error)
 	DespesasPorCategoria(ctx context.Context, from, to time.Time) ([]domain.CategoryTotal, error)
@@ -30,24 +30,29 @@ func NewDashboardService(repo DashboardRepo, recurrence *RecurrenceService, proj
 	return &DashboardService{repo: repo, recurrence: recurrence, projects: projects}
 }
 
-// Company assembles the admin/sócio financial overview for [from, to]. The
-// recurrence block reflects the month containing `to`.
+// Company assembles the admin/sócio financial overview for [from, to].
+// Realized aggregates are capped at today; recurrence keeps the entire chosen
+// period so future expected values remain visible as amounts due.
 func (s *DashboardService) Company(ctx context.Context, from, to domain.Date) (*domain.CompanyDashboard, error) {
 	fromT, toT := from.Time, to.Time
+	realizedTo := toT
+	if today := financeToday(); realizedTo.After(today) {
+		realizedTo = today
+	}
 
-	saldo, err := s.repo.SaldoEmCaixa(ctx)
+	saldo, err := s.repo.SaldoEmCaixa(ctx, financeToday())
 	if err != nil {
 		return nil, err
 	}
-	ganhos, despesas, err := s.repo.PeriodTotals(ctx, fromT, toT)
+	ganhos, despesas, err := s.repo.PeriodTotals(ctx, fromT, realizedTo)
 	if err != nil {
 		return nil, err
 	}
-	porOrigem, err := s.repo.GanhosPorOrigem(ctx, fromT, toT)
+	porOrigem, err := s.repo.GanhosPorOrigem(ctx, fromT, realizedTo)
 	if err != nil {
 		return nil, err
 	}
-	porCategoria, err := s.repo.DespesasPorCategoria(ctx, fromT, toT)
+	porCategoria, err := s.repo.DespesasPorCategoria(ctx, fromT, realizedTo)
 	if err != nil {
 		return nil, err
 	}
@@ -59,11 +64,11 @@ func (s *DashboardService) Company(ctx context.Context, from, to domain.Date) (*
 	if err != nil {
 		return nil, err
 	}
-	porProjeto, err := s.repo.PorProjeto(ctx, fromT, toT)
+	porProjeto, err := s.repo.PorProjeto(ctx, fromT, realizedTo)
 	if err != nil {
 		return nil, err
 	}
-	porColaborador, err := s.repo.PorColaborador(ctx, fromT, toT)
+	porColaborador, err := s.repo.PorColaborador(ctx, fromT, realizedTo)
 	if err != nil {
 		return nil, err
 	}

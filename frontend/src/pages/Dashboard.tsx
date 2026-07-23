@@ -5,7 +5,7 @@ import { useAuth } from "../lib/auth";
 import { useAsync } from "../lib/hooks";
 import { currentMonthRange, money, monthLabel } from "../lib/format";
 import { canManage, type CompanyDashboard, type MeDashboard } from "../lib/types";
-import { Bar, Empty, ErrorBanner, KpiMoney, SectionHead, Spinner } from "../components/ui";
+import { Bar, ChartTooltip, Empty, ErrorBanner, KpiMoney, SectionHead, Spinner } from "../components/ui";
 import { DatePicker } from "../components/DatePicker";
 import "./dashboard.css";
 
@@ -112,7 +112,7 @@ function CompanyView({ from, to }: { from: string; to: string }) {
   return (
     <div className="dash">
       <div className="grid grid-4">
-        <DashboardKpi to="/transacoes?contexto=saldo" label="Saldo em caixa" value={data.saldo_em_caixa} accent="teal" hint="realizado · todo o histórico" />
+        <DashboardKpi to="/transacoes?contexto=saldo" label="Saldo em caixa" value={data.saldo_em_caixa} accent="teal" hint="realizado · acumulado até hoje" />
         <DashboardKpi to={gainsUrl} label="Entradas realizadas" value={data.ganhos} hint="no período selecionado" />
         <DashboardKpi to={expensesUrl} label="Saídas realizadas" value={data.despesas} accent="copper" hint="no período selecionado" />
         <DashboardKpi to={periodUrl} label="Resultado realizado" value={data.resultado} accent={data.resultado >= 0 ? "teal" : "danger"} hint="entradas menos saídas" />
@@ -127,8 +127,12 @@ function CompanyView({ from, to }: { from: string; to: string }) {
               <strong className="num accent-teal">{money(data.ganhos)}</strong>
             </div>
             <div className="decision-row">
-              <div><span className="status-dot status-pending" /><span>Recorrência pendente no período</span></div>
-              <strong className="num accent-copper">{money(recPeriod.pendente)}</strong>
+              <div><span className="status-dot status-overdue" /><span>Recorrência vencida no período</span></div>
+              <strong className="num accent-danger">{money(recPeriod.vencido)}</strong>
+            </div>
+            <div className="decision-row">
+              <div><span className="status-dot status-pending" /><span>Recorrência a vencer no período</span></div>
+              <strong className="num accent-copper">{money(recPeriod.a_vencer)}</strong>
             </div>
             <div className="decision-row">
               <div><span className="status-dot status-future" /><span>Implementação a receber</span></div>
@@ -165,19 +169,26 @@ function CompanyView({ from, to }: { from: string; to: string }) {
 
         <div className="card panel">
           <SectionHead idx="05" title="Recorrência no período" action={<Link className="panel-link" to={`/recorrencia?ano=${rec.ano}&mes=${rec.mes}`}>Abrir recorrência →</Link>} />
-          <p className="panel-explainer">Cada mensalidade é somada uma vez por mês ativo dentro do filtro. Recebido considera apenas transações efetivamente lançadas.</p>
+          <p className="panel-explainer">Cada mensalidade entra na data de vencimento quando essa data pertence ao período ativo do projeto. Recebido considera apenas transações efetivamente lançadas.</p>
           <div className="rec-totals rec-totals-featured">
             <span>Previsto acumulado <b className="num">{money(recPeriod.previsto)}</b></span>
             <span>Recebido <b className="num accent-teal">{money(recPeriod.recebido)}</b></span>
-            <span>A receber <b className="num accent-copper">{money(recPeriod.pendente)}</b></span>
+            <span>Vencido <b className="num accent-danger">{money(recPeriod.vencido)}</b></span>
+            <span>A vencer <b className="num accent-copper">{money(recPeriod.a_vencer)}</b></span>
           </div>
           <div className="period-months" aria-label="Recorrência por mês do período">
             {recPeriod.meses.map((item) => (
-              <div className="period-month" key={`${item.ano}-${item.mes}`}>
+              <ChartTooltip
+                className="period-month"
+                key={`${item.ano}-${item.mes}`}
+                label={`${monthLabel(item.mes)}/${item.ano}`}
+                value={`Previsto ${money(item.previsto)}`}
+                description={`Recebido ${money(item.recebido)} · vencido ${money(item.vencido)} · a vencer ${money(item.a_vencer)}.`}
+              >
                 <div className="period-month-head"><span className="mono">{monthLabel(item.mes)}/{String(item.ano).slice(-2)}</span><strong className="num">{money(item.previsto)}</strong></div>
                 <div className="period-month-bar"><span style={{ width: `${item.previsto > 0 ? Math.min(100, (item.recebido / item.previsto) * 100) : 0}%` }} /></div>
-                <div className="period-month-meta"><span>recebido {money(item.recebido)}</span><span>pendente {money(item.pendente)}</span></div>
-              </div>
+                <div className="period-month-meta"><span>recebido {money(item.recebido)}</span><span>vencido {money(item.vencido)}</span><span>a vencer {money(item.a_vencer)}</span></div>
+              </ChartTooltip>
             ))}
           </div>
           {forecast ? (
@@ -191,10 +202,12 @@ function CompanyView({ from, to }: { from: string; to: string }) {
               </div>
               <div className="forecast-chart" aria-label="Previsão mensal de recorrência">
                 {forecastMonths.map((month) => (
-                  <div
+                  <ChartTooltip
                     className="forecast-month"
                     key={`${month.ano}-${month.mes}`}
-                    title={`${monthLabel(month.mes)}/${month.ano}: ${money(month.previsto)}`}
+                    label={`${monthLabel(month.mes)}/${month.ano}`}
+                    value={`Previsto ${money(month.previsto)}`}
+                    description="Projeção futura; ainda não compõe o caixa realizado."
                   >
                     <div className="forecast-track">
                       <span
@@ -205,7 +218,7 @@ function CompanyView({ from, to }: { from: string; to: string }) {
                     </div>
                     <span className="forecast-label mono">{monthLabel(month.mes)}</span>
                     <span className="forecast-year mono">{String(month.ano).slice(-2)}</span>
-                  </div>
+                  </ChartTooltip>
                 ))}
               </div>
             </div>

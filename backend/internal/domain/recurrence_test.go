@@ -125,3 +125,29 @@ func TestBuildForecastRespectsProjectPeriods(t *testing.T) {
 		t.Errorf("total = %d, want 76000", forecast.Total)
 	}
 }
+
+func TestBuildSummaryUsesBillingDateAndSeparatesOverdueFromFuture(t *testing.T) {
+	dueDay := 10
+	rows := []RecurrenceRow{
+		{ProjectID: 1, Nome: "Monthly", ValorMensal: 85000, DiaVencimento: &dueDay, DataInicio: dptr("2026-08-01")},
+	}
+
+	augustBeforeDue := BuildSummaryAt(2026, time.August, rows, time.Date(2026, time.August, 5, 0, 0, 0, 0, time.UTC))
+	if augustBeforeDue.AVencer != 85000 || augustBeforeDue.Vencido != 0 {
+		t.Fatalf("before due a_vencer/vencido = %d/%d", augustBeforeDue.AVencer, augustBeforeDue.Vencido)
+	}
+	if got := augustBeforeDue.Projetos[0].Vencimento.Format("2006-01-02"); got != "2026-08-10" {
+		t.Fatalf("vencimento = %s", got)
+	}
+
+	augustAfterDue := BuildSummaryAt(2026, time.August, rows, time.Date(2026, time.August, 11, 0, 0, 0, 0, time.UTC))
+	if augustAfterDue.Vencido != 85000 || augustAfterDue.AVencer != 0 {
+		t.Fatalf("after due vencido/a_vencer = %d/%d", augustAfterDue.Vencido, augustAfterDue.AVencer)
+	}
+
+	startsAfterDue := dptr("2026-08-20")
+	rows[0].DataInicio = startsAfterDue
+	if got := BuildSummaryAt(2026, time.August, rows, time.Date(2026, time.August, 1, 0, 0, 0, 0, time.UTC)).Previsto; got != 0 {
+		t.Fatalf("monthly charge before project start = %d", got)
+	}
+}

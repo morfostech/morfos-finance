@@ -45,20 +45,41 @@ type PlanningFilter struct {
 }
 
 type CashFlowDay struct {
-	Data           Date  `json:"data"`
-	Entradas       Money `json:"entradas"`
-	Saidas         Money `json:"saidas"`
-	SaldoProjetado Money `json:"saldo_projetado"`
+	Data           Date           `json:"data"`
+	Entradas       Money          `json:"entradas"`
+	Saidas         Money          `json:"saidas"`
+	SaldoProjetado Money          `json:"saldo_projetado"`
+	Itens          []CashFlowItem `json:"itens"`
+}
+
+type CashFlowItem struct {
+	Tipo       TxType    `json:"tipo"`
+	Valor      Money     `json:"valor"`
+	Descricao  string    `json:"descricao"`
+	ProjectID  *int64    `json:"project_id,omitempty"`
+	Origem     *TxOrigem `json:"origem,omitempty"`
+	Automatico bool      `json:"automatico"`
+	Confirmado bool      `json:"confirmado"`
+}
+
+type CashFlowMovement struct {
+	Data Date         `json:"data"`
+	Item CashFlowItem `json:"item"`
 }
 
 type CashFlowForecast struct {
-	Periodo      Period        `json:"periodo"`
-	SaldoInicial Money         `json:"saldo_inicial"`
-	Entradas     Money         `json:"entradas"`
-	Saidas       Money         `json:"saidas"`
-	SaldoFinal   Money         `json:"saldo_final"`
-	Vencidos     int           `json:"vencidos"`
-	Dias         []CashFlowDay `json:"dias"`
+	Periodo             Period        `json:"periodo"`
+	SaldoInicial        Money         `json:"saldo_inicial"`
+	Entradas            Money         `json:"entradas"`
+	EntradasAutomaticas Money         `json:"entradas_automaticas"`
+	EntradasManuais     Money         `json:"entradas_manuais"`
+	EntradasConfirmadas Money         `json:"entradas_confirmadas"`
+	Saidas              Money         `json:"saidas"`
+	SaidasManuais       Money         `json:"saidas_manuais"`
+	SaidasConfirmadas   Money         `json:"saidas_confirmadas"`
+	SaldoFinal          Money         `json:"saldo_final"`
+	Vencidos            int           `json:"vencidos"`
+	Dias                []CashFlowDay `json:"dias"`
 }
 
 type ExpenseBudget struct {

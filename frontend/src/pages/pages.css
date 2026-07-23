@@ -14,6 +14,10 @@ tr.clickable {
   color: var(--mist);
   margin-bottom: 18px;
   transition: color 0.2s;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
 }
 .back-link:hover {
   color: var(--teal);

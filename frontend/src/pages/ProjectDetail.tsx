@@ -1,11 +1,11 @@
 import { useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { api } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import { useAsync } from "../lib/hooks";
 import { date, money, todayISO } from "../lib/format";
 import { canManage, type Installment, type Project, type Proposal, type User } from "../lib/types";
-import { Empty, ErrorBanner, SectionHead, Spinner } from "../components/ui";
+import { BackButton, Empty, ErrorBanner, SectionHead, Spinner } from "../components/ui";
 import { PaidPill, StatusPill } from "../components/pills";
 import { NotesPanel } from "../components/NotesPanel";
 import "./pages.css";
@@ -26,7 +26,7 @@ export function ProjectDetail() {
 
   return (
     <div>
-      <Link to="/projetos" className="back-link">← Projetos</Link>
+      <BackButton fallback="/projetos" />
       <header className="page-head">
         <span className="kicker">Projeto</span>
         <h1>{project.nome}</h1>

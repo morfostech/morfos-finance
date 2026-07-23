@@ -18,13 +18,13 @@ func NewDashboardRepository(pool *pgxpool.Pool) *DashboardRepository {
 	return &DashboardRepository{pool: pool}
 }
 
-// SaldoEmCaixa is the all-time accumulated balance: sum(ganhos) - sum(despesas)
-// over non-deleted transactions.
-func (r *DashboardRepository) SaldoEmCaixa(ctx context.Context) (domain.Money, error) {
+// SaldoEmCaixa is the accumulated realized balance through asOf:
+// sum(ganhos) - sum(despesas) over non-deleted transactions.
+func (r *DashboardRepository) SaldoEmCaixa(ctx context.Context, asOf time.Time) (domain.Money, error) {
 	var s string
 	err := r.pool.QueryRow(ctx, `
 		SELECT COALESCE(SUM(CASE WHEN tipo = 'ganho' THEN valor ELSE -valor END), 0)::text
-		FROM transactions WHERE deleted_at IS NULL`).Scan(&s)
+		FROM transactions WHERE deleted_at IS NULL AND data <= $1`, asOf).Scan(&s)
 	if err != nil {
 		return 0, fmt.Errorf("saldo em caixa: %w", err)
 	}

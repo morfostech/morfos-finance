@@ -182,6 +182,40 @@ func (r *PlanningRepository) OpeningBalance(ctx context.Context, before time.Tim
 	return domain.ParseNumeric(value)
 }
 
+func (r *PlanningRepository) ConfirmedTransactions(ctx context.Context, from, to time.Time) ([]domain.CashFlowMovement, error) {
+	rows, err := r.pool.Query(ctx, `
+		SELECT tipo, valor::text, data, project_id, origem, descricao
+		FROM transactions
+		WHERE deleted_at IS NULL AND data >= $1 AND data <= $2
+		ORDER BY data, id`, from, to)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []domain.CashFlowMovement
+	for rows.Next() {
+		var movement domain.CashFlowMovement
+		var value string
+		var date time.Time
+		if err := rows.Scan(&movement.Item.Tipo, &value, &date, &movement.Item.ProjectID,
+			&movement.Item.Origem, &movement.Item.Descricao); err != nil {
+			return nil, err
+		}
+		money, err := domain.ParseNumeric(value)
+		if err != nil {
+			return nil, err
+		}
+		movement.Data = domain.NewDate(date)
+		movement.Item.Valor = money
+		movement.Item.Confirmado = true
+		if strings.TrimSpace(movement.Item.Descricao) == "" {
+			movement.Item.Descricao = "Transação confirmada"
+		}
+		out = append(out, movement)
+	}
+	return out, rows.Err()
+}
+
 func (r *PlanningRepository) CountOverdue(ctx context.Context, today time.Time) (int, error) {
 	var count int
 	err := r.pool.QueryRow(ctx, `SELECT COUNT(*) FROM planned_entries

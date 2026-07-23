@@ -91,6 +91,45 @@
   font-size: 14px;
 }
 
+.chart-tooltip-target {
+  cursor: help;
+  outline: none;
+}
+.chart-tooltip-target:focus-visible {
+  border-radius: 6px;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--teal) 65%, transparent);
+}
+.chart-tooltip-bubble {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: max-content;
+  max-width: 250px;
+  padding: 10px 12px;
+  border: 1px solid rgba(22, 176, 160, 0.4);
+  border-radius: 8px;
+  background: rgba(10, 18, 22, 0.97);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.42);
+  color: var(--bone);
+}
+.chart-tooltip-label {
+  color: var(--teal);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.chart-tooltip-value {
+  font-size: 16px;
+}
+.chart-tooltip-description {
+  color: var(--mist);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
 .bar-row {
   display: flex;
   flex-direction: column;

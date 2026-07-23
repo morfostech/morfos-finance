@@ -1,5 +1,5 @@
 import { useMemo, useState, type FormEvent } from "react";
-import { Bar, Empty, ErrorBanner, KpiMoney, SectionHead, Select, Spinner } from "../components/ui";
+import { BackButton, Bar, Empty, ErrorBanner, KpiMoney, SectionHead, Select, Spinner } from "../components/ui";
 import { Modal } from "../components/Modal";
 import { DatePicker } from "../components/DatePicker";
 import { api } from "../lib/api";
@@ -43,6 +43,7 @@ export function Planning() {
 
   return (
     <div>
+      <BackButton />
       <header className="page-head">
         <span className="kicker">04 / Planejamento</span>
         <h1>Fluxo de caixa futuro</h1>
@@ -62,20 +63,32 @@ export function Planning() {
           {forecast.data.vencidos > 0 && <div className="planning-alert">{forecast.data.vencidos} lançamento(s) vencido(s) aguardando baixa.</div>}
           <div className="grid grid-4">
             <KpiMoney label="Saldo antes do período" value={forecast.data.saldo_inicial} />
-            <KpiMoney label="Entradas previstas" value={forecast.data.entradas} accent="teal" />
-            <KpiMoney label="Saídas previstas" value={forecast.data.saidas} accent="copper" />
+            <KpiMoney label="Entradas no fluxo" value={forecast.data.entradas} accent="teal" hint={`${money(forecast.data.entradas_confirmadas)} confirmadas · ${money(forecast.data.entradas_automaticas)} recorrentes`} />
+            <KpiMoney label="Saídas no fluxo" value={forecast.data.saidas} accent="copper" hint={`${money(forecast.data.saidas_confirmadas)} confirmadas · ${money(forecast.data.saidas_manuais)} planejadas`} />
             <KpiMoney label="Saldo projetado" value={forecast.data.saldo_final} accent={forecast.data.saldo_final >= 0 ? "teal" : "danger"} />
           </div>
           <div className="card panel dash-block">
-            <SectionHead idx="02" title="Movimento projetado por data" />
+            <SectionHead idx="02" title="Movimento projetado por vencimento" />
             {forecast.data.dias.length === 0 ? <Empty>Nenhum movimento previsto no período.</Empty> : (
               <div className="forecast-ledger">
                 {forecast.data.dias.map((day) => (
-                  <div className="forecast-ledger-row" key={day.data}>
-                    <span className="mono muted">{date(day.data)}</span>
-                    <span className="tx-ganho num">+ {money(day.entradas)}</span>
-                    <span className="tx-despesa num">− {money(day.saidas)}</span>
-                    <strong className="num">{money(day.saldo_projetado)}</strong>
+                  <div className="forecast-day" key={day.data}>
+                    <div className="forecast-ledger-row">
+                      <span className="mono muted">{date(day.data)}</span>
+                      <span className="tx-ganho num">+ {money(day.entradas)}</span>
+                      <span className="tx-despesa num">− {money(day.saidas)}</span>
+                      <strong className="num">Saldo {money(day.saldo_projetado)}</strong>
+                    </div>
+                    <div className="forecast-items">
+                      {day.itens.map((item, index) => (
+                        <div className="forecast-item" key={`${item.descricao}-${item.valor}-${index}`}>
+                          <span>{item.descricao}</span>
+                          {item.automatico && <span className="pill pill-neutral">AUTOMÁTICO</span>}
+                          {item.confirmado && <span className="pill pill-ok">CONFIRMADO</span>}
+                          <strong className={`num ${item.tipo === "ganho" ? "tx-ganho" : "tx-despesa"}`}>{item.tipo === "ganho" ? "+" : "−"} {money(item.valor)}</strong>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -85,7 +98,7 @@ export function Planning() {
       )}
 
       <div className="card table-wrap dash-block">
-        <div className="panel"><SectionHead idx="03" title={status === "aberto" ? "Contas em aberto" : "Planejamentos realizados"} /></div>
+        <div className="panel"><SectionHead idx="03" title={status === "aberto" ? "Lançamentos planejados manualmente" : "Planejamentos realizados"} /></div>
         {entries.loading ? <Spinner /> : entries.error ? <ErrorBanner>{entries.error}</ErrorBanner> : !entries.data?.length ? <Empty>Nenhum lançamento no período.</Empty> : (
           <table><thead><tr><th>Vencimento</th><th>Descrição</th><th>Projeto / categoria</th><th>Situação</th><th style={{ textAlign: "right" }}>Valor</th><th /></tr></thead>
           <tbody>{entries.data.map((item) => <tr key={item.id}>
@@ -112,9 +125,15 @@ export function Planning() {
 
 function BudgetPanel({ month, onMonth, categories, data, loading, error, reload }: { month: string; onMonth: (v: string) => void; categories: Category[]; data: ExpenseBudget[]; loading: boolean; error: string | null; reload: () => void }) {
   const [category, setCategory] = useState(""); const [value, setValue] = useState(""); const [formError, setFormError] = useState<string | null>(null);
+  const selectedYear = Number(month.slice(0, 4));
+  const monthOptions = Array.from({ length: 48 }, (_, index) => {
+    const year = selectedYear - 1 + Math.floor(index / 12);
+    const monthNumber = index % 12 + 1;
+    return { value: `${year}-${String(monthNumber).padStart(2, "0")}`, label: `${monthLabel(monthNumber)}/${year}` };
+  });
   async function submit(e: FormEvent) { e.preventDefault(); const cents = toCentavos(value); if (!category || !cents || cents <= 0) return setFormError("Selecione uma categoria e informe um valor válido."); const [ano, mes] = month.split("-").map(Number); await api.put("/budgets", { category_id: Number(category), ano, mes, valor: cents }); setValue(""); setFormError(null); reload(); }
   return <div className="card panel dash-block"><SectionHead idx="04" title="Orçamento por categoria" />
-    <form className="budget-form" onSubmit={submit}><div className="field"><label>Mês</label><input type="month" value={month} onChange={(e) => onMonth(e.target.value)} /></div><div className="field"><label>Categoria</label><Select ariaLabel="Categoria do orçamento" value={category} onChange={setCategory} options={[{ value: "", label: "Selecione" }, ...categories.map((c) => ({ value: String(c.id), label: c.nome }))]} /></div><div className="field"><label>Limite (R$)</label><input inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} placeholder="5.000,00" /></div><button className="btn btn-primary btn-sm">Salvar limite</button></form>
+    <form className="budget-form" onSubmit={submit}><div className="field"><label>Mês</label><Select ariaLabel="Mês do orçamento" value={month} onChange={onMonth} options={monthOptions} /></div><div className="field"><label>Categoria</label><Select ariaLabel="Categoria do orçamento" value={category} onChange={setCategory} options={[{ value: "", label: "Selecione" }, ...categories.map((c) => ({ value: String(c.id), label: c.nome }))]} /></div><div className="field"><label>Limite (R$)</label><input inputMode="decimal" value={value} onChange={(e) => setValue(e.target.value)} placeholder="5.000,00" /></div><button className="btn btn-primary btn-sm">Salvar limite</button></form>
     {formError && <ErrorBanner>{formError}</ErrorBanner>}{loading ? <Spinner /> : error ? <ErrorBanner>{error}</ErrorBanner> : data.length === 0 ? <Empty>Sem limites definidos para {monthLabel(Number(month.slice(5)))}/{month.slice(0, 4)}.</Empty> : <div className="budget-list">{data.map((b) => <div className="budget-item" key={b.id}><div className="budget-head"><strong>{b.category}</strong><span className={b.percentual > 100 ? "danger-text num" : "num"}>{money(b.realizado)} / {money(b.valor)}</span></div><Bar label={`${b.percentual}% utilizado`} value={Math.min(b.realizado, b.valor)} total={b.valor} tone={b.percentual > 100 ? "copper" : undefined} /><button className="btn btn-ghost btn-sm" onClick={async () => { await api.del(`/budgets/${b.id}`); reload(); }}>Remover</button></div>)}</div>}
   </div>;
 }
