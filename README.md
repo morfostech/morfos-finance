@@ -2,7 +2,7 @@
 
 Sistema interno de controle financeiro da Morfos Tech. Backend em Go (Chi + PostgreSQL), frontend em React + TypeScript, identidade visual alinhada ao site da Morfos.
 
-> Módulos: **auth ✅ · projetos ✅ · transações ✅ · planejamento ✅ · orçamentos ✅ · recorrência ✅ · anexos ✅ · dashboards ✅ · frontend/tema ✅**.
+> Módulos: **auth ✅ · projetos ✅ · transações ✅ · planejamento ✅ · orçamentos ✅ · recorrência ✅ · Via Permuta ✅ · anexos ✅ · dashboards ✅ · frontend/tema ✅**.
 
 > **Valores monetários** trafegam na API em **centavos** (inteiro), nunca float. Ex.: `500000` = R$ 5.000,00.
 
@@ -168,6 +168,27 @@ fim do mês são ajustados para o último dia válido.
 
 O frontend também exporta a lista filtrada de transações em CSV compatível com
 planilhas brasileiras (UTF-8, separador `;` e valores em reais).
+
+## API — Via Permuta
+
+VP é tratado como um livro auxiliar independente: usa centésimos inteiros para
+manter precisão, mas nunca é somado ao caixa, ganhos ou despesas em reais. O
+saldo VP considera somente vendas e compras concluídas; negociações abertas não
+alteram a posição. O disponível é `saldo VP + limite aprovado`.
+
+| Método | Rota                                      | Descrição |
+|--------|-------------------------------------------|-----------|
+| GET    | `/api/via-permuta/summary`                | Posição, vendas/compras do período, tickets e indicadores |
+| GET/PUT| `/api/via-permuta/settings`               | Consulta ou ajusta o limite de crédito VP |
+| GET/POST | `/api/via-permuta/transactions`        | Lista ou cria vendas/compras VP |
+| PUT/DELETE | `/api/via-permuta/transactions/{id}` | Edita ou faz soft delete de uma movimentação |
+| GET/POST | `/api/via-permuta/offers`              | Lista ou cria ofertas do catálogo |
+| PUT/DELETE | `/api/via-permuta/offers/{id}`       | Edita ou faz soft delete de uma oferta |
+
+Movimentações aceitam status `negociando`, `concluida`, `recusada` ou
+`cancelada`, vínculo opcional com projeto, código de voucher e observações.
+Ofertas aceitam valor fixo ou negociável e guardam o link externo do anúncio na
+Via Permuta. Todas as rotas deste módulo são restritas a admin/sócio.
 
 ## API — módulo Recorrência
 

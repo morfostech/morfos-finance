@@ -21,12 +21,14 @@ interface NavItem {
   label: string;
   idx: string;
   roles?: string[];
+  accent?: "vp";
 }
 
 const NAV: NavItem[] = [
   { to: "/", label: "Dashboard", idx: "01" },
   { to: "/projetos", label: "Projetos", idx: "02" },
   { to: "/transacoes", label: "Transações", idx: "03" },
+  { to: "/via-permuta", label: "Via Permuta", idx: "VP", roles: ["admin", "socio"], accent: "vp" },
   { to: "/planejamento", label: "Planejamento", idx: "04", roles: ["admin", "socio"] },
   { to: "/anotacoes", label: "Anotações", idx: "05" },
   { to: "/solicitacoes", label: "Solicitações", idx: "06" },
@@ -54,7 +56,12 @@ export function AppShell() {
 
         <nav className="side-nav">
           {items.map((n) => (
-            <NavLink key={n.to} to={n.to} end={n.to === "/"} className="side-link">
+            <NavLink
+              key={n.to}
+              to={n.to}
+              end={n.to === "/"}
+              className={({ isActive }) => `side-link${isActive ? " active" : ""}${n.accent ? ` side-link-${n.accent}` : ""}`}
+            >
               <span className="side-idx mono">{n.idx}</span>
               <span>{n.label}</span>
             </NavLink>

@@ -13,6 +13,7 @@ import { Users } from "./pages/Users";
 import { Notes } from "./pages/Notes";
 import { ChangeRequests } from "./pages/ChangeRequests";
 import { Planning } from "./pages/Planning";
+import { ViaPermuta } from "./pages/ViaPermuta";
 import type { Role } from "./lib/types";
 
 export function App() {
@@ -45,6 +46,7 @@ export function App() {
           <Route element={<RoleGate roles={["admin", "socio"]} />}>
             <Route path="/recorrencia" element={<Recurrence />} />
             <Route path="/planejamento" element={<Planning />} />
+            <Route path="/via-permuta" element={<ViaPermuta />} />
           </Route>
           <Route element={<RoleGate roles={["admin", "socio"]} />}>
             <Route path="/usuarios" element={<Users />} />

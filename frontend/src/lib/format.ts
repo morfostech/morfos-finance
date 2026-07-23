@@ -10,6 +10,16 @@ export function money(centavos: number): string {
   return brl.format(centavos / 100);
 }
 
+const vpNumber = new Intl.NumberFormat("pt-BR", {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+/** Format VP hundredths without implying that the amount can be converted to BRL. */
+export function vpMoney(centavos: number): string {
+  return `VP$ ${vpNumber.format(centavos / 100)}`;
+}
+
 /** Parse a "R$ 5.000,00" / "5000,00" / "5000.00" input into centavos. */
 export function toCentavos(input: string): number | null {
   const cleaned = input.replace(/[^\d,.-]/g, "").replace(/\.(?=\d{3})/g, "");

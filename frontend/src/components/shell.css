@@ -76,6 +76,16 @@
 .side-link.active .side-idx {
   color: var(--teal);
 }
+.side-link-vp .side-idx {
+  color: #f3c623;
+}
+.side-link-vp.active {
+  background: linear-gradient(90deg, rgba(22, 176, 160, 0.11), rgba(243, 198, 35, 0.08));
+  border-color: rgba(243, 198, 35, 0.3);
+}
+.side-link-vp.active .side-idx {
+  color: #f3c623;
+}
 
 .side-foot {
   display: flex;
